@@ -113,13 +113,13 @@ samples.TvsM[nrow(samples.TvsM)+1,] <- c("07-644-T", "C3JP8ACXX_07-644-T_14s0014
 samples.TvsM[nrow(samples.TvsM)+1,] <- c("10-919-T", "C3JP8ACXX_10-919-T_14s001417-1-1_Rifatbegovic_lane214s001417_sequence.count", "T")
 samples.TvsM[nrow(samples.TvsM)+1,] <- c("08-644-M", "C3JP8ACXX_08-644-M_14s001415-1-1_Rifatbegovic_lane214s001415_sequence.count", "M")
 samples.TvsM[nrow(samples.TvsM)+1,] <- c("11-919-M", "C3JP8ACXX_11-919-M_14s001418-1-1_Rifatbegovic_lane214s001418_sequence.count", "M")
+samples.DvsM$condition <- relevel(as.factor(samples.DvsM$condition), "M")
 
 cds <- DESeqDataSetFromHTSeqCount(sampleTable = samples.TvsM, directory="~/fikret/results/htseq", design=~condition)
 cds <- estimateSizeFactors(cds)
 sizeFactors(cds)
 counts.norm <- as.data.frame(counts(cds, normalized=T))
 dds <- DESeq(cds)
-dds$condition <- relevel(dds$condition, "M")
 res <- results(dds)
 res <- res[order(res$padj),]
 res.df <- as.data.frame(res)
@@ -136,6 +136,7 @@ samples.TvsD[nrow(samples.TvsD)+1,] <- c("07-644-T", "C3JP8ACXX_07-644-T_14s0014
 samples.TvsD[nrow(samples.TvsD)+1,] <- c("10-919-T", "C3JP8ACXX_10-919-T_14s001417-1-1_Rifatbegovic_lane214s001417_sequence.count", "T")
 samples.TvsD[nrow(samples.TvsD)+1,] <- c("12-919-D", "C3JP8ACXX_12-919-D_14s001419-1-1_Rifatbegovic_lane214s001419_sequence.count", "D")
 samples.TvsD[nrow(samples.TvsD)+1,] <- c("09-644-D", "C3JP8ACXX_09-644-D_14s001416-1-1_Rifatbegovic_lane214s001416_sequence.count", "D")
+samples.DvsM$condition <- relevel(as.factor(samples.DvsM$condition), "D")
 
 rm(cds, dds, counts.norm, res, res.df, genes, res.annotated)
 cds <- DESeqDataSetFromHTSeqCount(sampleTable = samples.TvsD, directory="~/fikret/results/htseq", design=~condition)
@@ -143,7 +144,6 @@ cds <- estimateSizeFactors(cds)
 sizeFactors(cds)
 counts.norm <- as.data.frame(counts(cds, normalized=T))
 dds <- DESeq(cds)
-dds$condition <- relevel(dds$condition, "D")
 res <- results(dds)
 res <- res[order(res$padj),]
 res.df <- as.data.frame(res)
@@ -160,6 +160,7 @@ samples.DvsM[nrow(samples.DvsM)+1,] <- c("12-919-D", "C3JP8ACXX_12-919-D_14s0014
 samples.DvsM[nrow(samples.DvsM)+1,] <- c("09-644-D", "C3JP8ACXX_09-644-D_14s001416-1-1_Rifatbegovic_lane214s001416_sequence.count", "D")
 samples.DvsM[nrow(samples.DvsM)+1,] <- c("08-644-M", "C3JP8ACXX_08-644-M_14s001415-1-1_Rifatbegovic_lane214s001415_sequence.count", "M")
 samples.DvsM[nrow(samples.DvsM)+1,] <- c("11-919-M", "C3JP8ACXX_11-919-M_14s001418-1-1_Rifatbegovic_lane214s001418_sequence.count", "M")
+samples.DvsM$condition <- relevel(as.factor(samples.DvsM$condition), "M")
 
 rm(cds, dds, counts.norm, res, res.df, genes, res.annotated)
 cds <- DESeqDataSetFromHTSeqCount(sampleTable = samples.DvsM, directory="~/fikret/results/htseq", design=~condition)
@@ -167,7 +168,6 @@ cds <- estimateSizeFactors(cds)
 sizeFactors(cds)
 counts.norm <- as.data.frame(counts(cds, normalized=T))
 dds <- DESeq(cds)
-dds$condition <- relevel(dds$condition, "M")
 res <- results(dds)
 res <- res[order(res$padj),]
 res.df <- as.data.frame(res)
