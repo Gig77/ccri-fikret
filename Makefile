@@ -19,10 +19,11 @@ SAMPLES=C3JP8ACXX_01-15-BM100_14s001408-1-1_Rifatbegovic_lane114s001408_sequence
 		C3JP8ACXX_11-919-M_14s001418-1-1_Rifatbegovic_lane214s001418_sequence \
 		C3JP8ACXX_12-919-D_14s001419-1-1_Rifatbegovic_lane214s001419_sequence
 
-all: gsnap htseq qc blast
+all: gsnap htseq qc blast fastqc
 
 include ~/generic/scripts/rna-seq/gsnap.mk
 include ~/generic/scripts/rna-seq/htseq.mk
 include ~/generic/scripts/rna-seq/qc.mk
 include ~/generic/scripts/rna-seq/blast.mk
+include ~/generic/scripts/rna-seq/fastqc.mk
 
