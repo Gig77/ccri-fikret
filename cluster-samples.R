@@ -1,124 +1,49 @@
 options(warn=1)
 library("DESeq2")
+library("RColorBrewer")
+library("gplots")
 
-samples <- data.frame(name=character(), file=character(), condition=character(), stringsAsFactors=F)
-samples[nrow(samples)+1,] <- c("01-15-BM100", "01-15-BM100.count", "BM100")
-samples[nrow(samples)+1,] <- c("02-15-BM30", "02-15-BM30.count", "BM30")
-samples[nrow(samples)+1,] <- c("03-15-BM0", "03-15-BM0.count", "BM0")
-samples[nrow(samples)+1,] <- c("04-6-BM100", "04-6-BM100.count", "BM100")
-samples[nrow(samples)+1,] <- c("05-6-BM30", "05-6-BM30.count", "BM30")
-samples[nrow(samples)+1,] <- c("06-6-BM0", "06-6-BM0.count", "BM0")
-samples[nrow(samples)+1,] <- c("07-644-T", "07-644-T.count", "T")
-samples[nrow(samples)+1,] <- c("08-644-M", "08-644-M.count", "M")
-samples[nrow(samples)+1,] <- c("09-644-D", "09-644-D.count", "D")
-samples[nrow(samples)+1,] <- c("10-919-T", "10-919-T.count", "T")
-samples[nrow(samples)+1,] <- c("11-919-M", "11-919-M.count", "M")
-samples[nrow(samples)+1,] <- c("12-919-D", "12-919-D.count", "D")
+files <- list.files(path="~/fikret/results/htseq/", pattern=".count$")
 
-#=====================================================================================
-# scatter plots
-#=====================================================================================
+# remove samples from initial proof-of-principle project
+files <- files[!files %in% c("01-15-BM100.count", "02-15-BM30.count", "03-15-BM0.count", "04-6-BM100.count", "05-6-BM30.count", 
+				             "06-6-BM0.count", "07-644-T.count", "08-644-M.count", "09-644-D.count", "10-919-T.count", "11-919-M.count", "12-919-D.count")]
 
-#--------
-# DESeq2 - counts
-#--------
-cds <- DESeqDataSetFromHTSeqCount(sampleTable = samples, directory="~/fikret/results/htseq", design=~condition)
-counts.raw <- as.data.frame(counts(cds))
+# build sample data frame
+names <- unlist(strsplit(files, ".count"))
+site <- sapply(strsplit(names, "-"), "[[", 1)
+site[site=="D2"] <- "D"
+site <- factor(site, levels=c("M", "D", "T"))
+samples <- data.frame(name=names, file=files, site=site, stringsAsFactors=F)
 
-cds <- estimateSizeFactors(cds)
-sizeFactors(cds)
-counts <- as.data.frame(counts(cds, normalized=T))
+# transform counts into normalized values
+cds <- DESeqDataSetFromHTSeqCount(sampleTable=samples, directory="~/fikret/results/htseq", design=~site)
+dds <- DESeq(cds)
+rld <- rlog(dds)
 
-#-------
-# cell line spike ins
-#-------
-
-png(file="~/fikret/results/scatter_STA-NB-15_STA-NB-6.png", width=4000, height=3000, res=300)
-par(mfrow=c(2,3))
-
-#plot(ifelse(counts[,"01-15-BM100"] >= 1, log2(counts[,"01-15-BM100"]), 0), ifelse(counts[,"02-15-BM30"] >= 1, log2(counts[,"02-15-BM30"]), 0), cex=0.1, col=rgb(0,0,0,0.2), xlab="log2 rc 01-15-BM100", ylab="log2 rc 02-15-BM30")
-#smoothScatter(log2(counts[,"01-15-BM100"]), log2(counts[,"02-15-BM30"]), nbin=400, bandwidth=0.2)
-
-plot(log2(counts[,"01-15-BM100"]), log2(counts[,"02-15-BM30"]), cex=0.1, col=rgb(0,0,0,0.2), xlab="log2 rc 01-15-BM100", ylab="log2 rc 02-15-BM30")
-plot(log2(counts[,"01-15-BM100"]), log2(counts[,"03-15-BM0"]), cex=0.1, col=rgb(0,0,0,0.2), xlab="log2 rc 01-15-BM100", ylab="log2 rc 03-15-BM0")
-plot(log2(counts[,"02-15-BM30"]), log2(counts[,"03-15-BM0"]), cex=0.1, col=rgb(0,0,0,0.2), xlab="log2 rc 02-15-BM30", ylab="log2 rc 03-15-BM0")
-
-plot(log2(counts[,"04-6-BM100"]), log2(counts[,"05-6-BM30"]), cex=0.1, col=rgb(0,0,0,0.2), xlab="log2 rc 04-6-BM100", ylab="log2 rc 05-6-BM30")
-plot(log2(counts[,"04-6-BM100"]), log2(counts[,"06-6-BM0"]), cex=0.1, col=rgb(0,0,0,0.2), xlab="log2 rc 04-6-BM100", ylab="log2 rc 06-6-BM0")
-plot(log2(counts[,"05-6-BM30"]), log2(counts[,"06-6-BM0"]), cex=0.1, col=rgb(0,0,0,0.2), xlab="log2 rc 05-6-BM30", ylab="log2 rc 06-6-BM0")
-
+# heatmap
+distsRL <- dist(t(assay(rld)))
+mat <- as.matrix(distsRL)
+hmcol <- colorRampPalette(brewer.pal(10, "RdBu"))(256)
+pdf("~/fikret/results/sample-dist.heatmap.pdf", width=12, height=12)
+heatmap.2(mat, trace="none", col=rev(hmcol), margin=c(13, 13))
 dev.off()
 
-png(file="~/fikret/results/scatter_644_919.png", width=4000, height=3000, res=300)
-
-#-------
-# primary samples
-#-------
-
-# ---- 644
-
-par(mfrow=c(2,3))
-
-d <- data.frame(x = log2(counts[,"07-644-T"]), y = log2(counts[,"09-644-D"]))
-d <- d[complete.cases(d) & !is.infinite(d$x) & !is.infinite(d$y),]
-plot(d$x, d$y, cex=0.1, col=rgb(0,0,0,0.2), xlab="log2(nrc) 07-644-T", ylab="log2(nrc) 09-644-D", main=sprintf("n=%d, Spearman=%.2f", nrow(d), cor(d, method="spearman")[2]))
-abline(0, 1, col="black")
-
-d <- data.frame(x = log2(counts[,"07-644-T"]), y = log2(counts[,"08-644-M"]))
-d <- d[complete.cases(d) & !is.infinite(d$x) & !is.infinite(d$y),]
-plot(d$x, d$y, cex=0.1, col=rgb(0,0,0,0.2), xlab="log2(nrc) 07-644-T", ylab="log2(nrc) 08-644-M", main=sprintf("n=%d, Spearman=%.2f", nrow(d), cor(d, method="spearman")[2]))
-abline(0, 1, col="black")
-
-tf <- 0.43
-d <- data.frame(x = log2(counts[,"07-644-T"]), y = log2((counts[,"09-644-D"] - (1-tf) * counts[,"08-644-M"]) / tf))
-d <- d[complete.cases(d) & !is.infinite(d$x) & !is.infinite(d$y) & d$y > 0,]
-plot(d$x, d$y, cex=0.1, col=rgb(0,0,0,0.2), xlab="log2(nrc) 07-644-T", ylab="log2(nrc) 09-644-D adjusted", main=sprintf("n=%d, Spearman=%.2f", nrow(d), cor(d, method="spearman")[2]))
-abline(0, 1, col="black")
-
-# ---- 919
-
-d <- data.frame(x = log2(counts[,"10-919-T"]), y = log2(counts[,"12-919-D"]))
-d <- d[complete.cases(d) & !is.infinite(d$x) & !is.infinite(d$y),]
-plot(d$x, d$y, cex=0.1, col=rgb(0,0,0,0.2), xlab="log2(nrc) 10-919-T", ylab="log2(nrc) 12-919-D", main=sprintf("n=%d, Spearman=%.2f", nrow(d), cor(d, method="spearman")[2]))
-abline(0, 1, col="black")
-
-d <- data.frame(x = log2(counts[,"10-919-T"]), y = log2(counts[,"11-919-M"]))
-d <- d[complete.cases(d) & !is.infinite(d$x) & !is.infinite(d$y),]
-plot(d$x, d$y, cex=0.1, col=rgb(0,0,0,0.2), xlab="log2(nrc) 10-919-T", ylab="log2(nrc) 11-919-M", main=sprintf("n=%d, Spearman=%.2f", nrow(d), cor(d, method="spearman")[2]))
-abline(0, 1, col="black")
-
-tf <- 0.9
-d <- data.frame(x = log2(counts[,"10-919-T"]), y = log2((counts[,"12-919-D"] - (1-tf) * counts[,"11-919-M"]) / tf))
-d <- d[complete.cases(d) & !is.infinite(d$x) & !is.infinite(d$y) & d$y > 0,]
-plot(d$x, d$y, cex=0.1, col=rgb(0,0,0,0.2), xlab="log2(nrc) 10-919-T", ylab="log2(nrc) 12-919-D adjusted", main=sprintf("n=%d, Spearman=%.2f", nrow(d), cor(d, method="spearman")[2]))
-abline(0, 1, col="black")
-
+# PCA
+pdf("~/fikret/results/sample-dist.pca.pdf")
+p <- plotPCA(rld, intgroup=c("site"))
+p <- update(p, panel = function(x, y, ...) {
+			lattice::panel.xyplot(x, y, ...);
+			lattice::ltext(x=x, y=y, labels=rownames(colData(rld)), pos=1, offset=1, cex=0.4)
+		})
+print(p)
 dev.off()
 
-#=====================================================================================
-# differentially expressed genes
-#=====================================================================================
-
-library("biomaRt")
-mart <- useMart(biomart="ensembl", dataset="hsapiens_gene_ensembl") # GRCh37, v75
-set.seed(343)
-
-#------
-# DEGs primary samples
-#------
-
-# -- tumor vs. bone marrow
-samples.TvsM <- data.frame(name=character(), file=character(), condition=character(), stringsAsFactors=F)
-samples.TvsM[nrow(samples.TvsM)+1,] <- c("07-644-T", "07-644-T.count", "T")
-samples.TvsM[nrow(samples.TvsM)+1,] <- c("10-919-T", "10-919-T.count", "T")
-samples.TvsM[nrow(samples.TvsM)+1,] <- c("08-644-M", "08-644-M.count", "M")
-samples.TvsM[nrow(samples.TvsM)+1,] <- c("11-919-M", "11-919-M.count", "M")
-samples.DvsM$condition <- relevel(as.factor(samples.DvsM$condition), "M")
-
-cds <- DESeqDataSetFromHTSeqCount(sampleTable = samples.TvsM, directory="~/fikret/results/htseq", design=~condition)
+rld <- rlow(dds)
 cds <- estimateSizeFactors(cds)
 sizeFactors(cds)
 counts.norm <- as.data.frame(counts(cds, normalized=T))
+
 dds <- DESeq(cds)
 res <- results(dds)
 res <- res[order(res$padj),]
