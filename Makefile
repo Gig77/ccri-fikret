@@ -74,7 +74,7 @@ sample-dist.pca.without-outliers.pdf: $(foreach S, $(SAMPLES), htseq/$S.count) ~
 #=========================
 .PHONY: deseq clean-deseq
 
-deseq: deseq/TU-vs-DTC.diagnosis.paired.tsv deseq/TU-vs-DTC.diagnosis.full.tsv deseq/TU-vs-BM.diagnosis.paired.tsv deseq/TU-vs-BM.diagnosis.full.tsv deseq/DTC-vs-BM.diagnosis.tsv deseq/DTC-dia-vs-DTC-rel.tsv deseq/BM-dia-vs-BM-rel.tsv deseq/DTC-vs-BM.relapse.tsv
+deseq: deseq/TU-vs-DTC.diagnosis.paired.tsv deseq/TU-vs-DTC.diagnosis.full.tsv deseq/TU-vs-BM.diagnosis.paired.tsv deseq/TU-vs-BM.diagnosis.full.tsv deseq/DTC-vs-BM.diagnosis.tsv deseq/DTC-dia-vs-DTC-rel.tsv deseq/BM-dia-vs-BM-rel.tsv deseq/DTC-vs-BM.relapse.tsv deseq/DTC-rel-vs-BM-dia.tsv
 
 clean-deseq:
 	rm deseq/*
@@ -140,6 +140,14 @@ deseq/DTC-vs-BM.relapse.tsv: ~/generic/scripts/rna-seq/diff-exp.R $(foreach S, $
 	mkdir -p deseq
 	Rscript ~/generic/scripts/rna-seq/diff-exp.R \
 		--control    M-95-2120-06-R.count,M-95-2120-06-R-2.count,M-93-1141-07-R.count,M-95-0614-08-R.count,M-09-0606-11-R.count,M-14-1234-12-R.count,M-98-1897-13-R.count,M-13-0131-14-R.count,M-13-2083-15-R.count,M-12-2162-16-R.count,M-11-2208-18-R.count,M-07-0342-19-R.count,M-10-2326-20-R.count,M-02-0103-21-R.count,M-98-0062-22-R.count,M-10-2922-23-R.count,M-99-3072-24-R.count,M-92-0825-25-R.count,M-93-0849-10-R.count \
+		--experiment D-95-2120-06-R.count,D-95-2120-06-R-2.count,D-93-1141-07-R.count,D2-93-1141-07-R.count,D-95-0614-08-R.count,D-09-0606-11-R.count,D-14-1234-12-R.count,D-98-1897-13-R.count,D-13-0131-14-R.count,D-13-2083-15-R.count,D-12-2162-16-R.count,D-92-0841-17-R.count,D-11-2208-18-R.count,D-07-0342-19-R.count,D-10-2326-20-R.count,D-02-0103-21-R.count,D-98-0062-22-R.count,D-10-2922-23-R.count,D-99-3072-24-R.count,D-92-0825-25-R.count,D-93-0849-10-R.count \
+		--output-tsv $@.part
+	mv $@.part $@
+
+deseq/DTC-rel-vs-BM-dia.tsv:  ~/generic/scripts/rna-seq/diff-exp.R $(foreach S, $(SAMPLES), htseq/$S.count)
+	mkdir -p deseq
+	Rscript ~/generic/scripts/rna-seq/diff-exp.R \
+		--control M-99-1650-04-Dx.count,M-94-0919-05-Dx.count,M-93-0644-06-Dx.count,M-95-0029-01-Dx.count,M-03-4304-03-Dx.count,M-92-0551-07-Dx.count,M-93-0612-08-Dx.count,M-10-0681-28-Dx.count,M-06-3040-29-Dx.count,M-98-1987-30-Dx.count,M-98-1261-02-Dx.count,M-95-0581-27-Dx.count \
 		--experiment D-95-2120-06-R.count,D-95-2120-06-R-2.count,D-93-1141-07-R.count,D2-93-1141-07-R.count,D-95-0614-08-R.count,D-09-0606-11-R.count,D-14-1234-12-R.count,D-98-1897-13-R.count,D-13-0131-14-R.count,D-13-2083-15-R.count,D-12-2162-16-R.count,D-92-0841-17-R.count,D-11-2208-18-R.count,D-07-0342-19-R.count,D-10-2326-20-R.count,D-02-0103-21-R.count,D-98-0062-22-R.count,D-10-2922-23-R.count,D-99-3072-24-R.count,D-92-0825-25-R.count,D-93-0849-10-R.count \
 		--output-tsv $@.part
 	mv $@.part $@
