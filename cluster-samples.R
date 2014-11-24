@@ -71,3 +71,54 @@ p <- update(p, panel = function(x, y, ...) {
 		})
 print(p)
 dev.off()
+
+#---------------------
+# DeSeq2 VTS
+#---------------------
+
+samples <- read.delim("~/fikret/results/qlucore/sample-annotations.txt")
+samples$NameAnn <- paste(samples$Name, samples$TCC) # annotated name
+samples$NameAnn <- paste(samples$NameAnn, samples$MYCN) # annotated name
+samples$NameAnn <- paste(samples$NameAnn, samples$Coverage) # annotated name
+samples <- samples[,c("NameAnn", "Filename", colnames(samples)[!colnames(samples) %in% c("NameAnn", "Filename")])] # reorder columns compatible with DeSeqDataSetFromHTSeqCount()
+samples$TCC <- as.numeric(samples$TCC)
+samples$Filename <- gsub(".gsnap.filtered.bam", ".count", samples$Filename)
+#samples <- samples[samples$Site=="DTC",] # only DTCs
+cds <- DESeqDataSetFromHTSeqCount(sampleTable=samples, directory="~/fikret/results/htseq", design=~1)
+
+#maxs <- apply(counts(cds), 1, max) ; cds <- cds[maxs > 20,]
+rld <- varianceStabilizingTransformation(cds)
+#rld <- rlog(cds.trimmed, blind=T, fast=F)
+
+# heatmap
+distsRL <- dist(t(assay(rld)))
+mat <- as.matrix(distsRL)
+hmcol <- colorRampPalette(brewer.pal(10, "RdBu"))(256)
+pdf("~/fikret/results/sample-dist.heatmap.deseq2.VST.pdf", width=12, height=12)
+heatmap.2(mat, trace="none", col=rev(hmcol), margin=c(13, 13))
+dev.off()
+
+#---------------------
+# Voom
+#---------------------
+
+library(edgeR)
+samples <- read.delim("~/fikret/results/qlucore/sample-annotations.txt")
+samples$NameAnn <- paste(samples$Name, samples$TCC) # annotated name
+samples$NameAnn <- paste(samples$NameAnn, samples$MYCN) # annotated name
+samples$NameAnn <- paste(samples$NameAnn, samples$Coverage) # annotated name
+samples <- samples[,c("NameAnn", "Filename", colnames(samples)[!colnames(samples) %in% c("NameAnn", "Filename")])] # reorder columns compatible with DeSeqDataSetFromHTSeqCount()
+samples$Filename <- gsub(".gsnap.filtered.bam", ".count", samples$Filename)
+cds <- DESeqDataSetFromHTSeqCount(sampleTable=samples, directory="~/fikret/results/htseq", design=~1)
+
+dge <- DGEList(counts=counts(cds))
+dge.norm <- calcNormFactors(dge, method="TMM")
+y <- voom(dge.norm)
+
+# heatmap
+distsRL <- dist(t(y$E))
+mat <- as.matrix(distsRL)
+hmcol <- colorRampPalette(brewer.pal(10, "RdBu"))(256)
+pdf("~/fikret/results/sample-dist.heatmap.voom.pdf", width=12, height=12)
+heatmap.2(mat, trace="none", col=rev(hmcol), margin=c(13, 13))
+dev.off()
