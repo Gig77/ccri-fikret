@@ -1,7 +1,7 @@
 options(warn=1)
 library("DESeq2")
 
-files <- list.files(path="~/fikret/results/htseq/", pattern=".count$")
+files <- list.files(path="/mnt/projects/fikret/results/htseq/", pattern=".count$")
 	
 # remove samples from initial proof-of-principle project and samples that failed QC
 files <- files[!files %in% c("01-15-BM100.count", "02-15-BM30.count", "03-15-BM0.count", "04-6-BM100.count", "05-6-BM30.count", "06-6-BM0.count")]
@@ -10,10 +10,10 @@ samples <- data.frame(name=names, file=files, stringsAsFactors=F)
 samples.ex <- samples[grep("-x", samples$name, invert=T),] # remove excluded samples
 	
 # get counts of remaining samples
-cds <- DESeqDataSetFromHTSeqCount(sampleTable=samples.ex, directory="~/fikret/results/htseq", design=~1)
+cds <- DESeqDataSetFromHTSeqCount(sampleTable=samples.ex, directory="/mnt/projects/fikret/results/htseq", design=~1)
 
 # regularized log transformation (takes 2-3 hours to compute)
-countfile <- "~/fikret/results/deseq/counts.deseq2.rlogMat.RData"
+countfile <- "/mnt/projects/fikret/results/deseq/counts.deseq2.rlogMat.RData"
 if(file.exists(countfile)) {
 	load(countfile)
 } else {
@@ -24,15 +24,8 @@ if(file.exists(countfile)) {
 }
 
 # annotate genes HUGO gene names
-biomartfile <- "~/generic/data/ensembl/genes.GRCh37v75.biomart.RData"
-if(file.exists(biomartfile)) {
-	load(biomartfile)
-} else {
-	library("biomaRt")
-	mart <- useMart(biomart="ensembl", dataset="hsapiens_gene_ensembl") # GRCh37, v75
-	genes <- getGene(res.df$id, "ensembl_gene_id", mart)
-	save(genes, file=biomartfile)
-}
+biomartfile <- "/mnt/projects/generic/data/ensembl/genes.GRCh37v75.biomart.RData"
+load(biomartfile)
 
 geneids <- data.frame(ensemblid = rownames(rlogMat), stringsAsFactors=F)
 geneids <- merge(geneids, genes[,1:2], by.x="ensemblid", by.y="ensembl_gene_id", all.x=T) # add gene annotation
@@ -63,7 +56,7 @@ magec2 <- cormat["MAGEC2",]
 pos <- magec2[magec2 >= 0.6]; pos <- pos[order(pos, decreasing=T)]
 neg <- magec2[magec2 <= -0.6]; neg <- neg[order(neg, decreasing=F)]
 
-pdf("~/fikret/results/deseq/magec2.scatter.pos.pdf", height=10, width=14)
+pdf("/mnt/projects/fikret/results/deseq/magec2.scatter.pos.pdf", height=10, width=14)
 layout(cbind(matrix(1:16, nrow=4, byrow=T), c(17,17,17,17)))
 par(mar=c(2,4,1,1))
 samples <- as.factor(colnames(rlogMat.dtc))
@@ -82,7 +75,7 @@ for(i in c(2:length(pos))) {
 }
 dev.off()
 
-pdf("~/fikret/results/deseq/magec2.scatter.neg.pdf", height=10, width=14)
+pdf("/mnt/projects/fikret/results/deseq/magec2.scatter.neg.pdf", height=10, width=14)
 layout(cbind(matrix(1:16, nrow=4, byrow=T), c(17,17,17,17)))
 par(mar=c(2,4,1,1))
 samples <- as.factor(colnames(rlogMat.dtc))
@@ -110,10 +103,10 @@ mycn <- cormat["MYCN",]
 pos <- mycn[mycn >= 0.6]; pos <- pos[order(pos, decreasing=T)]
 neg <- mycn[mycn <= -0.6]; neg <- neg[order(neg, decreasing=F)]
 
-write.table(pos, file="~/fikret/results/deseq/mycn-corr-pos.tsv", col.names=T, row.names=T, sep="\t", quote=F)
-write.table(neg, file="~/fikret/results/deseq/mycn-corr-neg.tsv", col.names=T, row.names=T, sep="\t", quote=F)
+write.table(pos, file="/mnt/projects/fikret/results/deseq/mycn-corr-pos.tsv", col.names=T, row.names=T, sep="\t", quote=F)
+write.table(neg, file="/mnt/projects/fikret/results/deseq/mycn-corr-neg.tsv", col.names=T, row.names=T, sep="\t", quote=F)
 
-pdf("~/fikret/results/deseq/mycn.scatter.pos.pdf", height=10, width=14)
+pdf("/mnt/projects/fikret/results/deseq/mycn.scatter.pos.pdf", height=10, width=14)
 layout(cbind(matrix(1:16, nrow=4, byrow=T), c(17,17,17,17)))
 par(mar=c(2,4,1,1))
 samples <- as.factor(colnames(rlogMat.dtc))
@@ -132,7 +125,7 @@ for(i in c(2:length(pos))) {
 }
 dev.off()
 
-pdf("~/fikret/results/deseq/mycn.scatter.neg.pdf", height=10, width=14)
+pdf("/mnt/projects/fikret/results/deseq/mycn.scatter.neg.pdf", height=10, width=14)
 layout(cbind(matrix(1:16, nrow=4, byrow=T), c(17,17,17,17)))
 par(mar=c(2,4,1,1))
 samples <- as.factor(colnames(rlogMat.dtc))
@@ -155,7 +148,7 @@ dev.off()
 # MAGEC2 AND MYCN LINE PLOT
 #------------------------
 
-pdf("~/fikret/results/deseq/magec2.vs.mycn.pdf", height=7, width=14)
+pdf("/mnt/projects/fikret/results/deseq/magec2.vs.mycn.pdf", height=7, width=14)
 samples <- c(grep("-Dx", colnames(rlogMat.dtc)), grep("-Dx", colnames(rlogMat.dtc), invert=T)) 
 par(mar=c(8,4,1,2))
 matplot(t(rlogMat.dtc[c("MAGEC2", "MYCN"), samples]), type="l", xaxt='n', ylab="MAGEC2                                 MYCN")
@@ -171,15 +164,8 @@ magec2 <- rlogMat.dtc["ENSG00000046774",]
 
 magec2.cor (cor(rlogMat.dtc))
 # annotate genes HUGO gene names
-biomartfile <- "~/generic/data/ensembl/genes.GRCh37v75.biomart.RData"
-if(file.exists(biomartfile)) {
-	load(biomartfile)
-} else {
-	library("biomaRt")
-	mart <- useMart(biomart="ensembl", dataset="hsapiens_gene_ensembl") # GRCh37, v75
-	genes <- getGene(res.df$id, "ensembl_gene_id", mart)
-	save(genes, file=biomartfile)
-}
+biomartfile <- "/mnt/projects/generic/data/ensembl/genes.GRCh37v75.biomart.RData"
+load(biomartfile)
 
 # compute row-wise (gene-gene) correlation matrix
 # WARNING: takes > 40G memory!

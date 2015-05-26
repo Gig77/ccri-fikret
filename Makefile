@@ -3,7 +3,7 @@ SHELL=/bin/bash  # required to make pipefail work
 .SECONDARY:      # do not delete any intermediate files
 LOG = perl -ne 'use POSIX qw(strftime); $$|=1; print strftime("%F %02H:%02M:%S ", localtime), $$ARGV[0], "$@: $$_";'
 
-PROJECT_HOME=~/fikret
+PROJECT_HOME=/mnt/projects/fikret
 TRIM_BEFORE_BASE=1
 COUNT_STAT_YMAX=60
 
@@ -53,7 +53,7 @@ SAMPLES=03-15-BM0 02-15-BM30 01-15-BM100 \
 
 all: all-default deseq sample-dist.pca.without-outliers.pdf
 
-include ~/generic/scripts/rna-seq/default.mk
+include /mnt/projects/generic/scripts/rna-seq/default.mk
 
 clean: clean-default clean-deseq
 	rm -f sample-dist.*.pdf
@@ -62,8 +62,8 @@ clean: clean-default clean-deseq
 # sample clustering
 #=========================
  
-sample-dist.pca.without-outliers.pdf: $(foreach S, $(SAMPLES), htseq/$S.count) ~/fikret/scripts/cluster-samples.R
-	Rscript ~/fikret/scripts/cluster-samples.R
+sample-dist.pca.without-outliers.pdf: $(foreach S, $(SAMPLES), htseq/$S.count) /mnt/projects/fikret/scripts/cluster-samples.R
+	Rscript /mnt/projects/fikret/scripts/cluster-samples.R
 	mv sample-dist.pca.without-outliers.pdf.part sample-dist.pca.without-outliers.pdf
 	mv sample-dist.heatmap.without-outliers.pdf.part sample-dist.heatmap.without-outliers.pdf
 	mv sample-dist.pca.with-outliers.pdf.part sample-dist.pca.with-outliers.pdf
@@ -80,73 +80,73 @@ clean-deseq:
 	rm deseq/*
 	rmdir deseq
 
-deseq/TU-vs-DTC.diagnosis.paired.tsv: ~/generic/scripts/rna-seq/diff-exp.R $(foreach S, $(SAMPLES), htseq/$S.count)
+deseq/TU-vs-DTC.diagnosis.paired.tsv: /mnt/projects/generic/scripts/rna-seq/diff-exp.R $(foreach S, $(SAMPLES), htseq/$S.count)
 	mkdir -p deseq
-	Rscript ~/generic/scripts/rna-seq/diff-exp.R \
+	Rscript /mnt/projects/generic/scripts/rna-seq/diff-exp.R \
 		--control    D-99-1650-04-Dx.count,D-94-0919-05-Dx.count,D-93-0644-06-Dx.count,D-95-0029-01-Dx.count,D-03-4304-03-Dx.count \
 		--experiment T-99-1650-04-Dx.count,T2-99-1650-04-Dx.count,T-94-0919-05-Dx.count,T-93-0644-06-Dx.count,T-95-0029-01-Dx.count,T-03-4304-03-Dx.count,T2-03-4304-03-Dx.count \
 		--output-tsv $@.part
 	mv $@.part $@
 
-deseq/TU-vs-DTC.diagnosis.full.tsv: ~/generic/scripts/rna-seq/diff-exp.R $(foreach S, $(SAMPLES), htseq/$S.count)
+deseq/TU-vs-DTC.diagnosis.full.tsv: /mnt/projects/generic/scripts/rna-seq/diff-exp.R $(foreach S, $(SAMPLES), htseq/$S.count)
 	mkdir -p deseq
-	Rscript ~/generic/scripts/rna-seq/diff-exp.R \
+	Rscript /mnt/projects/generic/scripts/rna-seq/diff-exp.R \
 		--control    D-99-1650-04-Dx.count,D-94-0919-05-Dx.count,D-93-0644-06-Dx.count,D-95-0029-01-Dx.count,D-03-4304-03-Dx.count,D-92-0551-07-Dx.count,D-93-0612-08-Dx.count,D-10-0681-28-Dx.count,D-06-3040-29-Dx.count,D-98-1987-30-Dx.count,D-98-1261-02-Dx.count,D-95-0581-27-Dx.count \
 		--experiment T-99-1650-04-Dx.count,T2-99-1650-04-Dx.count,T-94-0919-05-Dx.count,T-93-0644-06-Dx.count,T-95-0029-01-Dx.count,T-03-4304-03-Dx.count,T2-03-4304-03-Dx.count,T-98-1261-02-Dx.count \
 		--output-tsv $@.part
 	mv $@.part $@
 
-deseq/TU-vs-BM.diagnosis.paired.tsv: ~/generic/scripts/rna-seq/diff-exp.R $(foreach S, $(SAMPLES), htseq/$S.count)
+deseq/TU-vs-BM.diagnosis.paired.tsv: /mnt/projects/generic/scripts/rna-seq/diff-exp.R $(foreach S, $(SAMPLES), htseq/$S.count)
 	mkdir -p deseq
-	Rscript ~/generic/scripts/rna-seq/diff-exp.R \
+	Rscript /mnt/projects/generic/scripts/rna-seq/diff-exp.R \
 		--control    M-99-1650-04-Dx.count,M-94-0919-05-Dx.count,M-93-0644-06-Dx.count,M-95-0029-01-Dx.count,M-03-4304-03-Dx.count \
 		--experiment T-99-1650-04-Dx.count,T2-99-1650-04-Dx.count,T-94-0919-05-Dx.count,T-93-0644-06-Dx.count,T-95-0029-01-Dx.count,T-03-4304-03-Dx.count,T2-03-4304-03-Dx.count \
 		--output-tsv $@.part
 	mv $@.part $@
 
-deseq/TU-vs-BM.diagnosis.full.tsv: ~/generic/scripts/rna-seq/diff-exp.R $(foreach S, $(SAMPLES), htseq/$S.count)
+deseq/TU-vs-BM.diagnosis.full.tsv: /mnt/projects/generic/scripts/rna-seq/diff-exp.R $(foreach S, $(SAMPLES), htseq/$S.count)
 	mkdir -p deseq
-	Rscript ~/generic/scripts/rna-seq/diff-exp.R \
+	Rscript /mnt/projects/generic/scripts/rna-seq/diff-exp.R \
 		--control    M-99-1650-04-Dx.count,M-94-0919-05-Dx.count,M-93-0644-06-Dx.count,M-95-0029-01-Dx.count,M-03-4304-03-Dx.count,M-92-0551-07-Dx.count,M-93-0612-08-Dx.count,M-10-0681-28-Dx.count,M-06-3040-29-Dx.count,M-98-1987-30-Dx.count,M-98-1261-02-Dx.count,M-95-0581-27-Dx.count \
 		--experiment T-99-1650-04-Dx.count,T2-99-1650-04-Dx.count,T-94-0919-05-Dx.count,T-93-0644-06-Dx.count,T-95-0029-01-Dx.count,T-03-4304-03-Dx.count,T2-03-4304-03-Dx.count,T-98-1261-02-Dx.count \
 		--output-tsv $@.part
 	mv $@.part $@
 
-deseq/DTC-vs-BM.diagnosis.tsv: ~/generic/scripts/rna-seq/diff-exp.R $(foreach S, $(SAMPLES), htseq/$S.count)
+deseq/DTC-vs-BM.diagnosis.tsv: /mnt/projects/generic/scripts/rna-seq/diff-exp.R $(foreach S, $(SAMPLES), htseq/$S.count)
 	mkdir -p deseq
-	Rscript ~/generic/scripts/rna-seq/diff-exp.R \
+	Rscript /mnt/projects/generic/scripts/rna-seq/diff-exp.R \
 		--control    M-99-1650-04-Dx.count,M-94-0919-05-Dx.count,M-93-0644-06-Dx.count,M-95-0029-01-Dx.count,M-03-4304-03-Dx.count,M-92-0551-07-Dx.count,M-93-0612-08-Dx.count,M-10-0681-28-Dx.count,M-06-3040-29-Dx.count,M-98-1987-30-Dx.count,M-98-1261-02-Dx.count,M-95-0581-27-Dx.count \
 		--experiment D-99-1650-04-Dx.count,D-94-0919-05-Dx.count,D-93-0644-06-Dx.count,D-95-0029-01-Dx.count,D-03-4304-03-Dx.count,D-92-0551-07-Dx.count,D-93-0612-08-Dx.count,D-10-0681-28-Dx.count,D-06-3040-29-Dx.count,D-98-1987-30-Dx.count,D-98-1261-02-Dx.count,D-95-0581-27-Dx.count \
 		--output-tsv $@.part
 	mv $@.part $@
 	
-deseq/DTC-dia-vs-DTC-rel.tsv:  ~/generic/scripts/rna-seq/diff-exp.R $(foreach S, $(SAMPLES), htseq/$S.count)
+deseq/DTC-dia-vs-DTC-rel.tsv:  /mnt/projects/generic/scripts/rna-seq/diff-exp.R $(foreach S, $(SAMPLES), htseq/$S.count)
 	mkdir -p deseq
-	Rscript ~/generic/scripts/rna-seq/diff-exp.R \
+	Rscript /mnt/projects/generic/scripts/rna-seq/diff-exp.R \
 		--control D-99-1650-04-Dx.count,D-95-0029-01-Dx.count,D-03-4304-03-Dx.count,D-94-0919-05-Dx.count,D-93-0644-06-Dx.count,D-92-0551-07-Dx.count,D-93-0612-08-Dx.count,D-10-0681-28-Dx.count,D-06-3040-29-Dx.count,D-98-1987-30-Dx.count,D-98-1261-02-Dx.count,D-95-0581-27-Dx.count \
 		--experiment D-95-2120-06-R.count,D-95-2120-06-R-2.count,D-93-1141-07-R.count,D2-93-1141-07-R.count,D-95-0614-08-R.count,D-09-0606-11-R.count,D-14-1234-12-R.count,D-98-1897-13-R.count,D-13-0131-14-R.count,D-13-2083-15-R.count,D-12-2162-16-R.count,D-92-0841-17-R.count,D-11-2208-18-R.count,D-07-0342-19-R.count,D-10-2326-20-R.count,D-02-0103-21-R.count,D-98-0062-22-R.count,D-10-2922-23-R.count,D-99-3072-24-R.count,D-92-0825-25-R.count,D-93-0849-10-R.count \
 		--output-tsv $@.part
 	mv $@.part $@
 
-deseq/BM-dia-vs-BM-rel.tsv:  ~/generic/scripts/rna-seq/diff-exp.R $(foreach S, $(SAMPLES), htseq/$S.count)
+deseq/BM-dia-vs-BM-rel.tsv:  /mnt/projects/generic/scripts/rna-seq/diff-exp.R $(foreach S, $(SAMPLES), htseq/$S.count)
 	mkdir -p deseq
-	Rscript ~/generic/scripts/rna-seq/diff-exp.R \
+	Rscript /mnt/projects/generic/scripts/rna-seq/diff-exp.R \
 		--control M-99-1650-04-Dx.count,M-94-0919-05-Dx.count,M-93-0644-06-Dx.count,M-95-0029-01-Dx.count,M-03-4304-03-Dx.count,M-92-0551-07-Dx.count,M-93-0612-08-Dx.count,M-10-0681-28-Dx.count,M-06-3040-29-Dx.count,M-98-1987-30-Dx.count,M-98-1261-02-Dx.count,M-95-0581-27-Dx.count \
 		--experiment M-95-2120-06-R.count,M-95-2120-06-R-2.count,M-93-1141-07-R.count,M-95-0614-08-R.count,M-09-0606-11-R.count,M-14-1234-12-R.count,M-98-1897-13-R.count,M-13-0131-14-R.count,M-13-2083-15-R.count,M-12-2162-16-R.count,M-11-2208-18-R.count,M-07-0342-19-R.count,M-10-2326-20-R.count,M-02-0103-21-R.count,M-98-0062-22-R.count,M-10-2922-23-R.count,M-99-3072-24-R.count,M-92-0825-25-R.count,M-93-0849-10-R.count \
 		--output-tsv $@.part
 	mv $@.part $@
 
-deseq/DTC-vs-BM.relapse.tsv: ~/generic/scripts/rna-seq/diff-exp.R $(foreach S, $(SAMPLES), htseq/$S.count)
+deseq/DTC-vs-BM.relapse.tsv: /mnt/projects/generic/scripts/rna-seq/diff-exp.R $(foreach S, $(SAMPLES), htseq/$S.count)
 	mkdir -p deseq
-	Rscript ~/generic/scripts/rna-seq/diff-exp.R \
+	Rscript /mnt/projects/generic/scripts/rna-seq/diff-exp.R \
 		--control    M-95-2120-06-R.count,M-95-2120-06-R-2.count,M-93-1141-07-R.count,M-95-0614-08-R.count,M-09-0606-11-R.count,M-14-1234-12-R.count,M-98-1897-13-R.count,M-13-0131-14-R.count,M-13-2083-15-R.count,M-12-2162-16-R.count,M-11-2208-18-R.count,M-07-0342-19-R.count,M-10-2326-20-R.count,M-02-0103-21-R.count,M-98-0062-22-R.count,M-10-2922-23-R.count,M-99-3072-24-R.count,M-92-0825-25-R.count,M-93-0849-10-R.count \
 		--experiment D-95-2120-06-R.count,D-95-2120-06-R-2.count,D-93-1141-07-R.count,D2-93-1141-07-R.count,D-95-0614-08-R.count,D-09-0606-11-R.count,D-14-1234-12-R.count,D-98-1897-13-R.count,D-13-0131-14-R.count,D-13-2083-15-R.count,D-12-2162-16-R.count,D-92-0841-17-R.count,D-11-2208-18-R.count,D-07-0342-19-R.count,D-10-2326-20-R.count,D-02-0103-21-R.count,D-98-0062-22-R.count,D-10-2922-23-R.count,D-99-3072-24-R.count,D-92-0825-25-R.count,D-93-0849-10-R.count \
 		--output-tsv $@.part
 	mv $@.part $@
 
-deseq/DTC-rel-vs-BM-dia.tsv:  ~/generic/scripts/rna-seq/diff-exp.R $(foreach S, $(SAMPLES), htseq/$S.count)
+deseq/DTC-rel-vs-BM-dia.tsv:  /mnt/projects/generic/scripts/rna-seq/diff-exp.R $(foreach S, $(SAMPLES), htseq/$S.count)
 	mkdir -p deseq
-	Rscript ~/generic/scripts/rna-seq/diff-exp.R \
+	Rscript /mnt/projects/generic/scripts/rna-seq/diff-exp.R \
 		--control M-99-1650-04-Dx.count,M-94-0919-05-Dx.count,M-93-0644-06-Dx.count,M-95-0029-01-Dx.count,M-03-4304-03-Dx.count,M-92-0551-07-Dx.count,M-93-0612-08-Dx.count,M-10-0681-28-Dx.count,M-06-3040-29-Dx.count,M-98-1987-30-Dx.count,M-98-1261-02-Dx.count,M-95-0581-27-Dx.count \
 		--experiment D-95-2120-06-R.count,D-95-2120-06-R-2.count,D-93-1141-07-R.count,D2-93-1141-07-R.count,D-95-0614-08-R.count,D-09-0606-11-R.count,D-14-1234-12-R.count,D-98-1897-13-R.count,D-13-0131-14-R.count,D-13-2083-15-R.count,D-12-2162-16-R.count,D-92-0841-17-R.count,D-11-2208-18-R.count,D-07-0342-19-R.count,D-10-2326-20-R.count,D-02-0103-21-R.count,D-98-0062-22-R.count,D-10-2922-23-R.count,D-99-3072-24-R.count,D-92-0825-25-R.count,D-93-0849-10-R.count \
 		--output-tsv $@.part

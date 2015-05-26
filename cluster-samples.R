@@ -5,14 +5,14 @@ library("gplots")
 library("edgeR")
 
 
-samples <- read.delim("~/fikret/results/qlucore/sample-annotations.txt")
+samples <- read.delim("/mnt/projects/fikret/results/qlucore/sample-annotations.txt")
 samples$NameAnn <- paste(samples$Name, samples$TCC) # annotated name
 samples$NameAnn <- paste(samples$NameAnn, samples$MYCN) # annotated name
 samples$NameAnn <- paste(samples$NameAnn, samples$Coverage) # annotated name
 samples <- samples[,c("NameAnn", "Filename", colnames(samples)[!colnames(samples) %in% c("NameAnn", "Filename")])] # reorder columns compatible with DeSeqDataSetFromHTSeqCount()
 samples$Filename <- gsub(".gsnap.filtered.bam", ".count", samples$Filename)
 
-cds <- DESeqDataSetFromHTSeqCount(sampleTable=samples, directory="~/fikret/results/htseq", design=~1)
+cds <- DESeqDataSetFromHTSeqCount(sampleTable=samples, directory="/mnt/projects/fikret/results/htseq", design=~1)
 
 # keep only expressed genes
 #cds <- cds[rowSums(cpm(DGEList(counts=counts(cds))) > 10 ) >= 2,] 
@@ -26,16 +26,16 @@ rld <- rlog(cds)
 distsRL <- dist(t(assay(rld)))
 mat <- as.matrix(distsRL)
 hmcol <- colorRampPalette(brewer.pal(10, "RdBu"))(256)
-pdf("~/fikret/results/sample-dist.heatmap.deseq2.rlog.pdf", width=12, height=12)
+pdf("/mnt/projects/fikret/results/sample-dist.heatmap.deseq2.rlog.pdf", width=12, height=12)
 heatmap.2(mat, trace="none", col=rev(hmcol), margin=c(13, 13))
 dev.off()
 
-pdf("~/fikret/results/sample-dist.heatmap.deseq2.rlog.customclustering.pdf", width=12, height=12)
+pdf("/mnt/projects/fikret/results/sample-dist.heatmap.deseq2.rlog.customclustering.pdf", width=12, height=12)
 heatmap.2(as.matrix(distsRL), hclustfun=function(x) hclust(x, method="average"), distfun=function(x) as.dist(x), trace="none", col=rev(hmcol), margin=c(13, 13))
 dev.off()
 
 # PCA
-pdf("~/fikret/results/sample-dist.pca.deseq2.rlog.pdf")
+pdf("/mnt/projects/fikret/results/sample-dist.pca.deseq2.rlog.pdf")
 p <- plotPCA(rld, intgroup=c("site"), col=c("red", "blue", "black"))
 p$panel.args.common$cex <- 0.7
 p <- update(p, panel = function(x, y, ...) {
@@ -57,7 +57,7 @@ rld <- varianceStabilizingTransformation(cds)
 distsRL <- dist(t(assay(rld)))
 mat <- as.matrix(distsRL)
 hmcol <- colorRampPalette(brewer.pal(10, "RdBu"))(256)
-pdf("~/fikret/results/sample-dist.heatmap.deseq2.VST.pdf", width=12, height=12)
+pdf("/mnt/projects/fikret/results/sample-dist.heatmap.deseq2.VST.pdf", width=12, height=12)
 heatmap.2(mat, trace="none", col=rev(hmcol), margin=c(13, 13))
 dev.off()
 
@@ -73,6 +73,6 @@ y <- voom(dge.norm)
 distsRL <- dist(t(y$E))
 mat <- as.matrix(distsRL)
 hmcol <- colorRampPalette(brewer.pal(10, "RdBu"))(256)
-pdf("~/fikret/results/sample-dist.heatmap.voom.pdf", width=12, height=12)
+pdf("/mnt/projects/fikret/results/sample-dist.heatmap.voom.pdf", width=12, height=12)
 heatmap.2(mat, trace="none", col=rev(hmcol), margin=c(13, 13))
 dev.off()

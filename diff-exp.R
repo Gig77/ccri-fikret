@@ -22,7 +22,7 @@ samples[nrow(samples)+1,] <- c("D-94-0919-05-Dx", "D-94-0919-05-Dx.count", "D")
 #--------
 # DESeq2 - counts
 #--------
-cds <- DESeqDataSetFromHTSeqCount(sampleTable = samples, directory="~/fikret/results/htseq", design=~condition)
+cds <- DESeqDataSetFromHTSeqCount(sampleTable = samples, directory="/mnt/projects/fikret/results/htseq", design=~condition)
 counts.raw <- as.data.frame(counts(cds))
 
 cds <- estimateSizeFactors(cds)
@@ -33,7 +33,7 @@ counts <- as.data.frame(counts(cds, normalized=T))
 # cell line spike ins
 #-------
 
-png(file="~/fikret/results/scatter_STA-NB-15_STA-NB-6.png", width=4000, height=3000, res=300)
+png(file="/mnt/projects/fikret/results/scatter_STA-NB-15_STA-NB-6.png", width=4000, height=3000, res=300)
 par(mfrow=c(2,3))
 
 #plot(ifelse(counts[,"01-15-BM100"] >= 1, log2(counts[,"01-15-BM100"]), 0), ifelse(counts[,"02-15-BM30"] >= 1, log2(counts[,"02-15-BM30"]), 0), cex=0.1, col=rgb(0,0,0,0.2), xlab="log2 rc 01-15-BM100", ylab="log2 rc 02-15-BM30")
@@ -49,7 +49,7 @@ plot(log2(counts[,"05-6-BM30"]), log2(counts[,"06-6-BM0"]), cex=0.1, col=rgb(0,0
 
 dev.off()
 
-png(file="~/fikret/results/scatter_644_919.png", width=4000, height=3000, res=300)
+png(file="/mnt/projects/fikret/results/scatter_644_919.png", width=4000, height=3000, res=300)
 
 #-------
 # primary samples
@@ -115,7 +115,7 @@ samples.TvsM[nrow(samples.TvsM)+1,] <- c("M-93-0644-06-Dx", "M-93-0644-06-Dx.cou
 samples.TvsM[nrow(samples.TvsM)+1,] <- c("M-94-0919-05-Dx", "M-94-0919-05-Dx.count", "M")
 samples.DvsM$condition <- relevel(as.factor(samples.DvsM$condition), "M")
 
-cds <- DESeqDataSetFromHTSeqCount(sampleTable = samples.TvsM, directory="~/fikret/results/htseq", design=~condition)
+cds <- DESeqDataSetFromHTSeqCount(sampleTable = samples.TvsM, directory="/mnt/projects/fikret/results/htseq", design=~condition)
 cds <- estimateSizeFactors(cds)
 sizeFactors(cds)
 counts.norm <- as.data.frame(counts(cds, normalized=T))
@@ -128,7 +128,7 @@ res.df$id <- rownames(res.df)
 genes <- getGene(res.df$id, "ensembl_gene_id", mart)
 res.annotated <- merge(res.df, genes[,1:3], by.x="id", by.y="ensembl_gene_id", all.x=T)
 res.annotated <- merge(res.annotated, counts.norm, by.x="id", by.y="row.names", all.x=T)
-write.table(res.annotated, file="~/fikret/results/patients-919-644.T-vs-M.deseq2.tsv", col.names=T, row.names=F, sep="\t", quote=F)
+write.table(res.annotated, file="/mnt/projects/fikret/results/patients-919-644.T-vs-M.deseq2.tsv", col.names=T, row.names=F, sep="\t", quote=F)
 
 # -- tumor vs. disseminated tumor cells in bone marrow
 samples.TvsD <- data.frame(name=character(), file=character(), condition=character(), stringsAsFactors=F)
@@ -139,7 +139,7 @@ samples.TvsD[nrow(samples.TvsD)+1,] <- c("D-93-0644-06-Dx", "D-93-0644-06-Dx.cou
 samples.DvsM$condition <- relevel(as.factor(samples.DvsM$condition), "D")
 
 rm(cds, dds, counts.norm, res, res.df, genes, res.annotated)
-cds <- DESeqDataSetFromHTSeqCount(sampleTable = samples.TvsD, directory="~/fikret/results/htseq", design=~condition)
+cds <- DESeqDataSetFromHTSeqCount(sampleTable = samples.TvsD, directory="/mnt/projects/fikret/results/htseq", design=~condition)
 cds <- estimateSizeFactors(cds)
 sizeFactors(cds)
 counts.norm <- as.data.frame(counts(cds, normalized=T))
@@ -152,7 +152,7 @@ res.df$id <- rownames(res.df)
 genes <- getGene(res.df$id, "ensembl_gene_id", mart)
 res.annotated <- merge(res.df, genes[,1:3], by.x="id", by.y="ensembl_gene_id", all.x=T)
 res.annotated <- merge(res.annotated, counts.norm, by.x="id", by.y="row.names", all.x=T)
-write.table(res.annotated, file="~/fikret/results/patients-919-644.T-vs-D.deseq2.tsv", col.names=T, row.names=F, sep="\t", quote=F)
+write.table(res.annotated, file="/mnt/projects/fikret/results/patients-919-644.T-vs-D.deseq2.tsv", col.names=T, row.names=F, sep="\t", quote=F)
 
 # -- disseminated tumor cells in bone marrow vs. bone marrow
 samples.DvsM <- data.frame(name=character(), file=character(), condition=character(), stringsAsFactors=F)
@@ -163,7 +163,7 @@ samples.DvsM[nrow(samples.DvsM)+1,] <- c("M-94-0919-05-Dx", "M-94-0919-05-Dx.cou
 samples.DvsM$condition <- relevel(as.factor(samples.DvsM$condition), "M")
 
 rm(cds, dds, counts.norm, res, res.df, genes, res.annotated)
-cds <- DESeqDataSetFromHTSeqCount(sampleTable = samples.DvsM, directory="~/fikret/results/htseq", design=~condition)
+cds <- DESeqDataSetFromHTSeqCount(sampleTable = samples.DvsM, directory="/mnt/projects/fikret/results/htseq", design=~condition)
 cds <- estimateSizeFactors(cds)
 sizeFactors(cds)
 counts.norm <- as.data.frame(counts(cds, normalized=T))
@@ -176,7 +176,7 @@ res.df$id <- rownames(res.df)
 genes <- getGene(res.df$id, "ensembl_gene_id", mart)
 res.annotated <- merge(res.df, genes[,1:3], by.x="id", by.y="ensembl_gene_id", all.x=T)
 res.annotated <- merge(res.annotated, counts.norm, by.x="id", by.y="row.names", all.x=T)
-write.table(res.annotated, file="~/fikret/results/patients-919-644.D-vs-M.deseq2.tsv", col.names=T, row.names=F, sep="\t", quote=F)
+write.table(res.annotated, file="/mnt/projects/fikret/results/patients-919-644.D-vs-M.deseq2.tsv", col.names=T, row.names=F, sep="\t", quote=F)
 
 #------
 # DEGs cell line spike ins
@@ -190,7 +190,7 @@ samples.BM100vsBM30[nrow(samples.BM100vsBM30)+1,] <- c("02-15-BM30", "02-15-BM30
 samples.BM100vsBM30[nrow(samples.BM100vsBM30)+1,] <- c("05-6-BM30", "05-6-BM30.count", "BM30")
 
 rm(cds, dds, res, res.df, genes, res.annotated)
-cds <- DESeqDataSetFromHTSeqCount(sampleTable = samples.BM100vsBM30, directory="~/fikret/results/htseq", design=~condition)
+cds <- DESeqDataSetFromHTSeqCount(sampleTable = samples.BM100vsBM30, directory="/mnt/projects/fikret/results/htseq", design=~condition)
 dds <- DESeq(cds)
 res <- results(dds)
 res <- res[order(res$padj),]
@@ -199,7 +199,7 @@ res.df$id <- rownames(res.df)
 
 genes <- getGene(res.df$id, "ensembl_gene_id", mart)
 res.annotated <- merge(res.df, genes[,1:3], by.x="id", by.y="ensembl_gene_id", all.x=T)
-write.table(res.annotated, file="~/fikret/results/BM100-vs-BM30.deseq2.tsv", col.names=T, row.names=F, sep="\t", quote=F)
+write.table(res.annotated, file="/mnt/projects/fikret/results/BM100-vs-BM30.deseq2.tsv", col.names=T, row.names=F, sep="\t", quote=F)
 
 # -- BM100 vs. BM0
 samples.BM100vsBM0 <- data.frame(name=character(), file=character(), condition=character(), stringsAsFactors=F)
@@ -209,7 +209,7 @@ samples.BM100vsBM0[nrow(samples.BM100vsBM0)+1,] <- c("03-15-BM0", "03-15-BM0.cou
 samples.BM100vsBM0[nrow(samples.BM100vsBM0)+1,] <- c("06-6-BM0", "06-6-BM0.count", "BM0")
 
 rm(cds, dds, res, res.df, genes, res.annotated)
-cds <- DESeqDataSetFromHTSeqCount(sampleTable = samples.BM100vsBM0, directory="~/fikret/results/htseq", design=~condition)
+cds <- DESeqDataSetFromHTSeqCount(sampleTable = samples.BM100vsBM0, directory="/mnt/projects/fikret/results/htseq", design=~condition)
 dds <- DESeq(cds)
 res <- results(dds)
 res <- res[order(res$padj),]
@@ -218,7 +218,7 @@ res.df$id <- rownames(res.df)
 
 genes <- getGene(res.df$id, "ensembl_gene_id", mart)
 res.annotated <- merge(res.df, genes[,1:3], by.x="id", by.y="ensembl_gene_id", all.x=T)
-write.table(res.annotated, file="~/fikret/results/BM100-vs-BM0.deseq2.tsv", col.names=T, row.names=F, sep="\t", quote=F)
+write.table(res.annotated, file="/mnt/projects/fikret/results/BM100-vs-BM0.deseq2.tsv", col.names=T, row.names=F, sep="\t", quote=F)
 
 # -- BM30 vs. BM0
 samples.BM30vsBM0 <- data.frame(name=character(), file=character(), condition=character(), stringsAsFactors=F)
@@ -228,7 +228,7 @@ samples.BM30vsBM0[nrow(samples.BM30vsBM0)+1,] <- c("03-15-BM0", "03-15-BM0.count
 samples.BM30vsBM0[nrow(samples.BM30vsBM0)+1,] <- c("06-6-BM0", "06-6-BM0.count", "BM0")
 
 rm(cds, dds, res, res.df, genes, res.annotated)
-cds <- DESeqDataSetFromHTSeqCount(sampleTable = samples.BM30vsBM0, directory="~/fikret/results/htseq", design=~condition)
+cds <- DESeqDataSetFromHTSeqCount(sampleTable = samples.BM30vsBM0, directory="/mnt/projects/fikret/results/htseq", design=~condition)
 dds <- DESeq(cds)
 res <- results(dds)
 res <- res[order(res$padj),]
@@ -237,5 +237,5 @@ res.df$id <- rownames(res.df)
 
 genes <- getGene(res.df$id, "ensembl_gene_id", mart)
 res.annotated <- merge(res.df, genes[,1:3], by.x="id", by.y="ensembl_gene_id", all.x=T)
-write.table(res.annotated, file="~/fikret/results/BM30-vs-BM0.deseq2.tsv", col.names=T, row.names=F, sep="\t", quote=F)
+write.table(res.annotated, file="/mnt/projects/fikret/results/BM30-vs-BM0.deseq2.tsv", col.names=T, row.names=F, sep="\t", quote=F)
 
