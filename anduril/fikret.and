@@ -1,0 +1,63 @@
+//------------------------------------------------------------------------------------------------
+//--- CONSTANTS
+//------------------------------------------------------------------------------------------------
+
+title = "Neuroblastoma DTC RNA-seq"
+shortName = "NB-DTC"
+authors = "Christian Frech"
+
+runMutations = true
+
+PROJECT_BASE="/mnt/projects/fikret"
+gtf = INPUT(path=PROJECT_BASE+"/data/Homo_sapiens.GRCh37.75.etv6runx1.gtf.gz")
+referenceGenomeFasta = INPUT(path="/data_synology/anduril/docker-images/anduril-gsnap_2014_12_28-human_g1k_v37/db/human_g1k_v37/human_g1k_v37_etv6runx1.fasta") 
+geneAnnot = INPUT(path=PROJECT_BASE+"/data/ensembl.homo_sapiens_75_37.geneAnnotations.tsv") // downloaded via Ensembl biomart http://feb2014.archive.ensembl.org/biomart/martview/b57730c5d3013cd648bcd2c966113d42
+latexHeaderMutation = INPUT(path=PROJECT_BASE+"/scripts/anduril/latexHeaderMutation")
+
+moksiskaanInit = MoksiskaanInit(showLog='EnsemblImport,PathwayCommonsImport,PINAImport,WikiPathways')
+ensemblRef = XrefLinkRule(moksiskaan = moksiskaanInit.connection, columns = "Ensembl=Ensembl", xrefTypes  = XrefType_Ensembl_gene)
+
+rConfig = RConfigurationReport(packages = "base,csbl.go,DESeq2,igraph", sectionType = "section")
+bibtexMoksiskaan = INPUT(path="/usr/local/share/anduril-bundles/moksiskaan/components/report-BibTeX/moksiskaan.bib")
+bibtexSequencing = INPUT(path="/usr/local/share/anduril-bundles/sequencing/components/report-BibTeX/sequencing.bib")
+
+docTemplate = LatexTemplate
+(
+	authors  = std.quote(authors, type="LaTeX"),
+	bibtex1  = rConfig.citations,
+	bibtex2  = bibtexMoksiskaan,
+	bibtex3  = bibtexSequencing,
+	title    = std.quote(title, type="LaTeX"),
+	printTOC = true
+)
+
+//------------------------------------------------------------------------------------------------
+//--- MUTATION REPORT
+//------------------------------------------------------------------------------------------------
+
+include "/mnt/projects/generic/scripts/anduril/mutations.and"
+
+inputBamDir = INPUT(path="/mnt/projects/fikret/results/gsnap", recursive=false)
+alignedBams = Folder2Array(folder1 = inputBamDir, filePattern = "(.*(-R|-Dx|-R-\\d)).gsnap.filtered.bam$")
+
+mutationReport = MutationReport
+(
+	alignedBams  = alignedBams,
+	sectionTitle = "Mutated genes",
+	sectionType  = "section",
+	@enabled     = runMutations
+)
+
+mutationPDF = LatexPDF
+(
+	document = mutationReport,
+	header   = latexHeaderMutation,
+	footer   = docTemplate.footer,
+	useRefs  = true,
+	verbose  = false,
+	@enabled = runMutations
+)
+
+@out.out.filename = shortName + "-mutations.pdf"
+OUTPUT(mutationPDF.document)
+

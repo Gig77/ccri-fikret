@@ -1,99 +1,99 @@
-ln -s /data/christian/fikret/data/current/bam/embl/C3JP8ACXX_01-15-BM100_14s001408-1-1_Rifatbegovic_lane114s001408_sequence.bam /data/christian/fikret/data/current/bam/01-15-BM100.bam
-ln -s /data/christian/fikret/data/current/bam/embl/C3JP8ACXX_02-15-BM30_14s001409-1-1_Rifatbegovic_lane114s001409_sequence.bam /data/christian/fikret/data/current/bam/02-15-BM30.bam
-ln -s /data/christian/fikret/data/current/bam/embl/C3JP8ACXX_03-15-BM0_14s001410-1-1_Rifatbegovic_lane114s001410_sequence.bam /data/christian/fikret/data/current/bam/03-15-BM0.bam
-ln -s /data/christian/fikret/data/current/bam/embl/C3JP8ACXX_04-6-BM100_14s001411-1-1_Rifatbegovic_lane114s001411_sequence.bam /data/christian/fikret/data/current/bam/04-6-BM100.bam
-ln -s /data/christian/fikret/data/current/bam/embl/C3JP8ACXX_05-6-BM30_14s001412-1-1_Rifatbegovic_lane114s001412_sequence.bam /data/christian/fikret/data/current/bam/05-6-BM30.bam
-ln -s /data/christian/fikret/data/current/bam/embl/C3JP8ACXX_06-6-BM0_14s001413-1-1_Rifatbegovic_lane114s001413_sequence.bam /data/christian/fikret/data/current/bam/06-6-BM0.bam
+ln /mnt/projects/fikret/data/bam/embl/C3JP8ACXX_01-15-BM100_14s001408-1-1_Rifatbegovic_lane114s001408_sequence.bam /mnt/projects/fikret/data/bam/01-15-BM100.bam
+ln /mnt/projects/fikret/data/bam/embl/C3JP8ACXX_02-15-BM30_14s001409-1-1_Rifatbegovic_lane114s001409_sequence.bam /mnt/projects/fikret/data/bam/02-15-BM30.bam
+ln /mnt/projects/fikret/data/bam/embl/C3JP8ACXX_03-15-BM0_14s001410-1-1_Rifatbegovic_lane114s001410_sequence.bam /mnt/projects/fikret/data/bam/03-15-BM0.bam
+ln /mnt/projects/fikret/data/bam/embl/C3JP8ACXX_04-6-BM100_14s001411-1-1_Rifatbegovic_lane114s001411_sequence.bam /mnt/projects/fikret/data/bam/04-6-BM100.bam
+ln /mnt/projects/fikret/data/bam/embl/C3JP8ACXX_05-6-BM30_14s001412-1-1_Rifatbegovic_lane114s001412_sequence.bam /mnt/projects/fikret/data/bam/05-6-BM30.bam
+ln /mnt/projects/fikret/data/bam/embl/C3JP8ACXX_06-6-BM0_14s001413-1-1_Rifatbegovic_lane114s001413_sequence.bam /mnt/projects/fikret/data/bam/06-6-BM0.bam
 
-ln -s /data/christian/fikret/data/current/bam/embl/C3JP8ACXX_07-644-T_14s001414-1-1_Rifatbegovic_lane214s001414_sequence.bam /data/christian/fikret/data/current/bam/T-93-0644-06-Dx.bam
-ln -s /data/christian/fikret/data/current/bam/embl/C3JP8ACXX_08-644-M_14s001415-1-1_Rifatbegovic_lane214s001415_sequence.bam /data/christian/fikret/data/current/bam/M-93-0644-06-Dx.bam
-ln -s /data/christian/fikret/data/current/bam/embl/C3JP8ACXX_09-644-D_14s001416-1-1_Rifatbegovic_lane214s001416_sequence.bam /data/christian/fikret/data/current/bam/D-93-0644-06-Dx.bam
-ln -s /data/christian/fikret/data/current/bam/embl/C3JP8ACXX_10-919-T_14s001417-1-1_Rifatbegovic_lane214s001417_sequence.bam /data/christian/fikret/data/current/bam/T-94-0919-05-Dx.bam
-ln -s /data/christian/fikret/data/current/bam/embl/C3JP8ACXX_11-919-M_14s001418-1-1_Rifatbegovic_lane214s001418_sequence.bam /data/christian/fikret/data/current/bam/M-94-0919-05-Dx.bam
-ln -s /data/christian/fikret/data/current/bam/embl/C3JP8ACXX_12-919-D_14s001419-1-1_Rifatbegovic_lane214s001419_sequence.bam /data/christian/fikret/data/current/bam/D-94-0919-05-Dx.bam
+ln /mnt/projects/fikret/data/bam/embl/C3JP8ACXX_07-644-T_14s001414-1-1_Rifatbegovic_lane214s001414_sequence.bam /mnt/projects/fikret/data/bam/T-93-0644-06-Dx.bam
+ln /mnt/projects/fikret/data/bam/embl/C3JP8ACXX_08-644-M_14s001415-1-1_Rifatbegovic_lane214s001415_sequence.bam /mnt/projects/fikret/data/bam/M-93-0644-06-Dx.bam
+ln /mnt/projects/fikret/data/bam/embl/C3JP8ACXX_09-644-D_14s001416-1-1_Rifatbegovic_lane214s001416_sequence.bam /mnt/projects/fikret/data/bam/D-93-0644-06-Dx.bam
+ln /mnt/projects/fikret/data/bam/embl/C3JP8ACXX_10-919-T_14s001417-1-1_Rifatbegovic_lane214s001417_sequence.bam /mnt/projects/fikret/data/bam/T-94-0919-05-Dx.bam
+ln /mnt/projects/fikret/data/bam/embl/C3JP8ACXX_11-919-M_14s001418-1-1_Rifatbegovic_lane214s001418_sequence.bam /mnt/projects/fikret/data/bam/M-94-0919-05-Dx.bam
+ln /mnt/projects/fikret/data/bam/embl/C3JP8ACXX_12-919-D_14s001419-1-1_Rifatbegovic_lane214s001419_sequence.bam /mnt/projects/fikret/data/bam/D-94-0919-05-Dx.bam
 
-ln -s /data/christian/fikret/data/current/bam/embl/C4GRWACXX_FR1_14s005689-1-1_Rifatbegovic_lane5D19920551_sequence.bam /data/christian/fikret/data/current/bam/D-92-0551-07-Dx.bam
-ln -s /data/christian/fikret/data/current/bam/embl/C4GRWACXX_FR3_14s005691-1-1_Rifatbegovic_lane7D19941911_sequence.bam /data/christian/fikret/data/current/bam/D-94-1911-33-R-x.bam
-ln -s /data/christian/fikret/data/current/bam/embl/C4GRWACXX_FR1_14s005689-1-1_Rifatbegovic_lane5D19931141_sequence.bam /data/christian/fikret/data/current/bam/D-93-1141-07-R.bam
-ln -s /data/christian/fikret/data/current/bam/embl/C4GRWACXX_FR3_14s005691-1-1_Rifatbegovic_lane7D20130131_sequence.bam /data/christian/fikret/data/current/bam/D-13-0131-14-R.bam
-ln -s /data/christian/fikret/data/current/bam/embl/C4GRWACXX_FR1_14s005689-1-1_Rifatbegovic_lane5D219931141_sequence.bam /data/christian/fikret/data/current/bam/D2-93-1141-07-R.bam
-ln -s /data/christian/fikret/data/current/bam/embl/C4GRWACXX_FR3_14s005691-1-1_Rifatbegovic_lane7M19921182_sequence.bam /data/christian/fikret/data/current/bam/M-92-1182-33-Dx.bam
-ln -s /data/christian/fikret/data/current/bam/embl/C4GRWACXX_FR1_14s005689-1-1_Rifatbegovic_lane5M19920551_sequence.bam /data/christian/fikret/data/current/bam/M-92-0551-07-Dx.bam
-ln -s /data/christian/fikret/data/current/bam/embl/C4GRWACXX_FR3_14s005691-1-1_Rifatbegovic_lane7M19941911_sequence.bam /data/christian/fikret/data/current/bam/M-94-1911-33-R.bam
-ln -s /data/christian/fikret/data/current/bam/embl/C4GRWACXX_FR1_14s005689-1-1_Rifatbegovic_lane5M19931141_sequence.bam /data/christian/fikret/data/current/bam/M-93-1141-07-R.bam
-ln -s /data/christian/fikret/data/current/bam/embl/C4GRWACXX_FR3_14s005691-1-1_Rifatbegovic_lane7M20130131_sequence.bam /data/christian/fikret/data/current/bam/M-13-0131-14-R.bam
-ln -s /data/christian/fikret/data/current/bam/embl/C4GRWACXX_FR2_14s005690-1-1_Rifatbegovic_lane6D19921283_sequence.bam /data/christian/fikret/data/current/bam/D-92-1283-10-Dx-x.bam
-ln -s /data/christian/fikret/data/current/bam/embl/C4GRWACXX_FR4_14s005692-1-1_Rifatbegovic_lane8D19950029_sequence.bam /data/christian/fikret/data/current/bam/D-95-0029-01-Dx.bam
-ln -s /data/christian/fikret/data/current/bam/embl/C4GRWACXX_FR2_14s005690-1-1_Rifatbegovic_lane6D19930849_sequence.bam /data/christian/fikret/data/current/bam/D-93-0849-10-R.bam
-ln -s /data/christian/fikret/data/current/bam/embl/C4GRWACXX_FR4_14s005692-1-1_Rifatbegovic_lane8D19951415_sequence.bam /data/christian/fikret/data/current/bam/D-95-1415-31-Dx-x.bam
-ln -s /data/christian/fikret/data/current/bam/embl/C4GRWACXX_FR2_14s005690-1-1_Rifatbegovic_lane6D20141234_sequence.bam /data/christian/fikret/data/current/bam/D-14-1234-12-R.bam
-ln -s /data/christian/fikret/data/current/bam/embl/C4GRWACXX_FR4_14s005692-1-1_Rifatbegovic_lane8M19950029_sequence.bam /data/christian/fikret/data/current/bam/M-95-0029-01-Dx.bam
-ln -s /data/christian/fikret/data/current/bam/embl/C4GRWACXX_FR2_14s005690-1-1_Rifatbegovic_lane6M19921283_sequence.bam /data/christian/fikret/data/current/bam/M-92-1283-10-Dx.bam
-ln -s /data/christian/fikret/data/current/bam/embl/C4GRWACXX_FR4_14s005692-1-1_Rifatbegovic_lane8M19951415_sequence.bam /data/christian/fikret/data/current/bam/M-95-1415-31-Dx.bam
-ln -s /data/christian/fikret/data/current/bam/embl/C4GRWACXX_FR2_14s005690-1-1_Rifatbegovic_lane6M19930849_sequence.bam /data/christian/fikret/data/current/bam/M-93-0849-10-R.bam
-ln -s /data/christian/fikret/data/current/bam/embl/C4GRWACXX_FR4_14s005692-1-1_Rifatbegovic_lane8T19950029_sequence.bam /data/christian/fikret/data/current/bam/T-95-0029-01-Dx.bam
-ln -s /data/christian/fikret/data/current/bam/embl/C4GRWACXX_FR2_14s005690-1-1_Rifatbegovic_lane6M20141234_sequence.bam /data/christian/fikret/data/current/bam/M-14-1234-12-R.bam
-ln -s /data/christian/fikret/data/current/bam/embl/C4GRWACXX_FR3_14s005691-1-1_Rifatbegovic_lane7D19921182_sequence.bam /data/christian/fikret/data/current/bam/D-92-1182-33-Dx-x.bam
+ln /mnt/projects/fikret/data/bam/embl/C4GRWACXX_FR1_14s005689-1-1_Rifatbegovic_lane5D19920551_sequence.bam /mnt/projects/fikret/data/bam/D-92-0551-07-Dx.bam
+ln /mnt/projects/fikret/data/bam/embl/C4GRWACXX_FR3_14s005691-1-1_Rifatbegovic_lane7D19941911_sequence.bam /mnt/projects/fikret/data/bam/D-94-1911-33-R-x.bam
+ln /mnt/projects/fikret/data/bam/embl/C4GRWACXX_FR1_14s005689-1-1_Rifatbegovic_lane5D19931141_sequence.bam /mnt/projects/fikret/data/bam/D-93-1141-07-R.bam
+ln /mnt/projects/fikret/data/bam/embl/C4GRWACXX_FR3_14s005691-1-1_Rifatbegovic_lane7D20130131_sequence.bam /mnt/projects/fikret/data/bam/D-13-0131-14-R.bam
+ln /mnt/projects/fikret/data/bam/embl/C4GRWACXX_FR1_14s005689-1-1_Rifatbegovic_lane5D219931141_sequence.bam /mnt/projects/fikret/data/bam/D2-93-1141-07-R.bam
+ln /mnt/projects/fikret/data/bam/embl/C4GRWACXX_FR3_14s005691-1-1_Rifatbegovic_lane7M19921182_sequence.bam /mnt/projects/fikret/data/bam/M-92-1182-33-Dx.bam
+ln /mnt/projects/fikret/data/bam/embl/C4GRWACXX_FR1_14s005689-1-1_Rifatbegovic_lane5M19920551_sequence.bam /mnt/projects/fikret/data/bam/M-92-0551-07-Dx.bam
+ln /mnt/projects/fikret/data/bam/embl/C4GRWACXX_FR3_14s005691-1-1_Rifatbegovic_lane7M19941911_sequence.bam /mnt/projects/fikret/data/bam/M-94-1911-33-R.bam
+ln /mnt/projects/fikret/data/bam/embl/C4GRWACXX_FR1_14s005689-1-1_Rifatbegovic_lane5M19931141_sequence.bam /mnt/projects/fikret/data/bam/M-93-1141-07-R.bam
+ln /mnt/projects/fikret/data/bam/embl/C4GRWACXX_FR3_14s005691-1-1_Rifatbegovic_lane7M20130131_sequence.bam /mnt/projects/fikret/data/bam/M-13-0131-14-R.bam
+ln /mnt/projects/fikret/data/bam/embl/C4GRWACXX_FR2_14s005690-1-1_Rifatbegovic_lane6D19921283_sequence.bam /mnt/projects/fikret/data/bam/D-92-1283-10-Dx-x.bam
+ln /mnt/projects/fikret/data/bam/embl/C4GRWACXX_FR4_14s005692-1-1_Rifatbegovic_lane8D19950029_sequence.bam /mnt/projects/fikret/data/bam/D-95-0029-01-Dx.bam
+ln /mnt/projects/fikret/data/bam/embl/C4GRWACXX_FR2_14s005690-1-1_Rifatbegovic_lane6D19930849_sequence.bam /mnt/projects/fikret/data/bam/D-93-0849-10-R.bam
+ln /mnt/projects/fikret/data/bam/embl/C4GRWACXX_FR4_14s005692-1-1_Rifatbegovic_lane8D19951415_sequence.bam /mnt/projects/fikret/data/bam/D-95-1415-31-Dx-x.bam
+ln /mnt/projects/fikret/data/bam/embl/C4GRWACXX_FR2_14s005690-1-1_Rifatbegovic_lane6D20141234_sequence.bam /mnt/projects/fikret/data/bam/D-14-1234-12-R.bam
+ln /mnt/projects/fikret/data/bam/embl/C4GRWACXX_FR4_14s005692-1-1_Rifatbegovic_lane8M19950029_sequence.bam /mnt/projects/fikret/data/bam/M-95-0029-01-Dx.bam
+ln /mnt/projects/fikret/data/bam/embl/C4GRWACXX_FR2_14s005690-1-1_Rifatbegovic_lane6M19921283_sequence.bam /mnt/projects/fikret/data/bam/M-92-1283-10-Dx.bam
+ln /mnt/projects/fikret/data/bam/embl/C4GRWACXX_FR4_14s005692-1-1_Rifatbegovic_lane8M19951415_sequence.bam /mnt/projects/fikret/data/bam/M-95-1415-31-Dx.bam
+ln /mnt/projects/fikret/data/bam/embl/C4GRWACXX_FR2_14s005690-1-1_Rifatbegovic_lane6M19930849_sequence.bam /mnt/projects/fikret/data/bam/M-93-0849-10-R.bam
+ln /mnt/projects/fikret/data/bam/embl/C4GRWACXX_FR4_14s005692-1-1_Rifatbegovic_lane8T19950029_sequence.bam /mnt/projects/fikret/data/bam/T-95-0029-01-Dx.bam
+ln /mnt/projects/fikret/data/bam/embl/C4GRWACXX_FR2_14s005690-1-1_Rifatbegovic_lane6M20141234_sequence.bam /mnt/projects/fikret/data/bam/M-14-1234-12-R.bam
+ln /mnt/projects/fikret/data/bam/embl/C4GRWACXX_FR3_14s005691-1-1_Rifatbegovic_lane7D19921182_sequence.bam /mnt/projects/fikret/data/bam/D-92-1182-33-Dx-x.bam
 
-ln -s /data/christian/fikret/data/current/bam/embl/C53DNACXX_FR11_14s005699-1-1_Rifatbegovic_lane5D19920841_sequence.bam /data/christian/fikret/data/current/bam/D-92-0841-17-R.bam
-ln -s /data/christian/fikret/data/current/bam/embl/C53DNACXX_FR12_14s005700-1-1_Rifatbegovic_lane6M20063040_sequence.bam /data/christian/fikret/data/current/bam/M-06-3040-29-Dx.bam
-ln -s /data/christian/fikret/data/current/bam/embl/C53DNACXX_FR13_14s005701-1-1_Rifatbegovic_lane7M20102922_sequence.bam /data/christian/fikret/data/current/bam/M-10-2922-23-R.bam
-ln -s /data/christian/fikret/data/current/bam/embl/C53DNACXX_FR11_14s005699-1-1_Rifatbegovic_lane5D19981261_sequence.bam /data/christian/fikret/data/current/bam/D-98-1261-02-Dx.bam
-ln -s /data/christian/fikret/data/current/bam/embl/C53DNACXX_FR12_14s005700-1-1_Rifatbegovic_lane6M20070342_sequence.bam /data/christian/fikret/data/current/bam/M-07-0342-19-R.bam
-ln -s /data/christian/fikret/data/current/bam/embl/C53DNACXX_FR14_14s005702-1-1_Rifatbegovic_lane8D19952493_sequence.bam /data/christian/fikret/data/current/bam/D-95-2493-35-Dx-x.bam
-ln -s /data/christian/fikret/data/current/bam/embl/C53DNACXX_FR11_14s005699-1-1_Rifatbegovic_lane5M19920841_sequence.bam /data/christian/fikret/data/current/bam/M-92-0841-17-R-x.bam
-ln -s /data/christian/fikret/data/current/bam/embl/C53DNACXX_FR12_14s005700-1-1_Rifatbegovic_lane6M20112208_sequence.bam /data/christian/fikret/data/current/bam/M-11-2208-18-R.bam
-ln -s /data/christian/fikret/data/current/bam/embl/C53DNACXX_FR14_14s005702-1-1_Rifatbegovic_lane8D19981897_sequence.bam /data/christian/fikret/data/current/bam/D-98-1897-13-R.bam
-ln -s /data/christian/fikret/data/current/bam/embl/C53DNACXX_FR11_14s005699-1-1_Rifatbegovic_lane5M19981261_sequence.bam /data/christian/fikret/data/current/bam/M-98-1261-02-Dx.bam
-ln -s /data/christian/fikret/data/current/bam/embl/C53DNACXX_FR13_14s005701-1-1_Rifatbegovic_lane7D19980062_sequence.bam /data/christian/fikret/data/current/bam/D-98-0062-22-R.bam
-ln -s /data/christian/fikret/data/current/bam/embl/C53DNACXX_FR14_14s005702-1-1_Rifatbegovic_lane8D20100681_sequence.bam /data/christian/fikret/data/current/bam/D-10-0681-28-Dx.bam
-ln -s /data/christian/fikret/data/current/bam/embl/C53DNACXX_FR11_14s005699-1-1_Rifatbegovic_lane5T19981261_sequence.bam /data/christian/fikret/data/current/bam/T-98-1261-02-Dx.bam
-ln -s /data/christian/fikret/data/current/bam/embl/C53DNACXX_FR13_14s005701-1-1_Rifatbegovic_lane7D20020103_sequence.bam /data/christian/fikret/data/current/bam/D-02-0103-21-R.bam
-ln -s /data/christian/fikret/data/current/bam/embl/C53DNACXX_FR14_14s005702-1-1_Rifatbegovic_lane8GCCAAT_sequence.bam /data/christian/fikret/data/current/bam/D-03-5050-32-Dx-x.bam
-ln -s /data/christian/fikret/data/current/bam/embl/C53DNACXX_FR12_14s005700-1-1_Rifatbegovic_lane6D20063040_sequence.bam /data/christian/fikret/data/current/bam/D-06-3040-29-Dx.bam
-ln -s /data/christian/fikret/data/current/bam/embl/C53DNACXX_FR13_14s005701-1-1_Rifatbegovic_lane7D20102922_sequence.bam /data/christian/fikret/data/current/bam/D-10-2922-23-R.bam
-ln -s /data/christian/fikret/data/current/bam/embl/C53DNACXX_FR14_14s005702-1-1_Rifatbegovic_lane8M19981897_sequence.bam /data/christian/fikret/data/current/bam/M-98-1897-13-R.bam
-ln -s /data/christian/fikret/data/current/bam/embl/C53DNACXX_FR12_14s005700-1-1_Rifatbegovic_lane6D20070342_sequence.bam /data/christian/fikret/data/current/bam/D-07-0342-19-R.bam
-ln -s /data/christian/fikret/data/current/bam/embl/C53DNACXX_FR13_14s005701-1-1_Rifatbegovic_lane7M19980062_sequence.bam /data/christian/fikret/data/current/bam/M-98-0062-22-R.bam
-ln -s /data/christian/fikret/data/current/bam/embl/C53DNACXX_FR14_14s005702-1-1_Rifatbegovic_lane8M20035050_sequence.bam /data/christian/fikret/data/current/bam/M-03-5050-32-Dx-x.bam
-ln -s /data/christian/fikret/data/current/bam/embl/C53DNACXX_FR12_14s005700-1-1_Rifatbegovic_lane6D20112208_sequence.bam /data/christian/fikret/data/current/bam/D-11-2208-18-R.bam
-ln -s /data/christian/fikret/data/current/bam/embl/C53DNACXX_FR13_14s005701-1-1_Rifatbegovic_lane7M20020103_sequence.bam /data/christian/fikret/data/current/bam/M-02-0103-21-R.bam
-ln -s /data/christian/fikret/data/current/bam/embl/C53DNACXX_FR14_14s005702-1-1_Rifatbegovic_lane8M20100681_sequence.bam /data/christian/fikret/data/current/bam/M-10-0681-28-Dx.bam
+ln /mnt/projects/fikret/data/bam/embl/C53DNACXX_FR11_14s005699-1-1_Rifatbegovic_lane5D19920841_sequence.bam /mnt/projects/fikret/data/bam/D-92-0841-17-R.bam
+ln /mnt/projects/fikret/data/bam/embl/C53DNACXX_FR12_14s005700-1-1_Rifatbegovic_lane6M20063040_sequence.bam /mnt/projects/fikret/data/bam/M-06-3040-29-Dx.bam
+ln /mnt/projects/fikret/data/bam/embl/C53DNACXX_FR13_14s005701-1-1_Rifatbegovic_lane7M20102922_sequence.bam /mnt/projects/fikret/data/bam/M-10-2922-23-R.bam
+ln /mnt/projects/fikret/data/bam/embl/C53DNACXX_FR11_14s005699-1-1_Rifatbegovic_lane5D19981261_sequence.bam /mnt/projects/fikret/data/bam/D-98-1261-02-Dx.bam
+ln /mnt/projects/fikret/data/bam/embl/C53DNACXX_FR12_14s005700-1-1_Rifatbegovic_lane6M20070342_sequence.bam /mnt/projects/fikret/data/bam/M-07-0342-19-R.bam
+ln /mnt/projects/fikret/data/bam/embl/C53DNACXX_FR14_14s005702-1-1_Rifatbegovic_lane8D19952493_sequence.bam /mnt/projects/fikret/data/bam/D-95-2493-35-Dx-x.bam
+ln /mnt/projects/fikret/data/bam/embl/C53DNACXX_FR11_14s005699-1-1_Rifatbegovic_lane5M19920841_sequence.bam /mnt/projects/fikret/data/bam/M-92-0841-17-R-x.bam
+ln /mnt/projects/fikret/data/bam/embl/C53DNACXX_FR12_14s005700-1-1_Rifatbegovic_lane6M20112208_sequence.bam /mnt/projects/fikret/data/bam/M-11-2208-18-R.bam
+ln /mnt/projects/fikret/data/bam/embl/C53DNACXX_FR14_14s005702-1-1_Rifatbegovic_lane8D19981897_sequence.bam /mnt/projects/fikret/data/bam/D-98-1897-13-R.bam
+ln /mnt/projects/fikret/data/bam/embl/C53DNACXX_FR11_14s005699-1-1_Rifatbegovic_lane5M19981261_sequence.bam /mnt/projects/fikret/data/bam/M-98-1261-02-Dx.bam
+ln /mnt/projects/fikret/data/bam/embl/C53DNACXX_FR13_14s005701-1-1_Rifatbegovic_lane7D19980062_sequence.bam /mnt/projects/fikret/data/bam/D-98-0062-22-R.bam
+ln /mnt/projects/fikret/data/bam/embl/C53DNACXX_FR14_14s005702-1-1_Rifatbegovic_lane8D20100681_sequence.bam /mnt/projects/fikret/data/bam/D-10-0681-28-Dx.bam
+ln /mnt/projects/fikret/data/bam/embl/C53DNACXX_FR11_14s005699-1-1_Rifatbegovic_lane5T19981261_sequence.bam /mnt/projects/fikret/data/bam/T-98-1261-02-Dx.bam
+ln /mnt/projects/fikret/data/bam/embl/C53DNACXX_FR13_14s005701-1-1_Rifatbegovic_lane7D20020103_sequence.bam /mnt/projects/fikret/data/bam/D-02-0103-21-R.bam
+ln /mnt/projects/fikret/data/bam/embl/C53DNACXX_FR14_14s005702-1-1_Rifatbegovic_lane8GCCAAT_sequence.bam /mnt/projects/fikret/data/bam/D-03-5050-32-Dx-x.bam
+ln /mnt/projects/fikret/data/bam/embl/C53DNACXX_FR12_14s005700-1-1_Rifatbegovic_lane6D20063040_sequence.bam /mnt/projects/fikret/data/bam/D-06-3040-29-Dx.bam
+ln /mnt/projects/fikret/data/bam/embl/C53DNACXX_FR13_14s005701-1-1_Rifatbegovic_lane7D20102922_sequence.bam /mnt/projects/fikret/data/bam/D-10-2922-23-R.bam
+ln /mnt/projects/fikret/data/bam/embl/C53DNACXX_FR14_14s005702-1-1_Rifatbegovic_lane8M19981897_sequence.bam /mnt/projects/fikret/data/bam/M-98-1897-13-R.bam
+ln /mnt/projects/fikret/data/bam/embl/C53DNACXX_FR12_14s005700-1-1_Rifatbegovic_lane6D20070342_sequence.bam /mnt/projects/fikret/data/bam/D-07-0342-19-R.bam
+ln /mnt/projects/fikret/data/bam/embl/C53DNACXX_FR13_14s005701-1-1_Rifatbegovic_lane7M19980062_sequence.bam /mnt/projects/fikret/data/bam/M-98-0062-22-R.bam
+ln /mnt/projects/fikret/data/bam/embl/C53DNACXX_FR14_14s005702-1-1_Rifatbegovic_lane8M20035050_sequence.bam /mnt/projects/fikret/data/bam/M-03-5050-32-Dx-x.bam
+ln /mnt/projects/fikret/data/bam/embl/C53DNACXX_FR12_14s005700-1-1_Rifatbegovic_lane6D20112208_sequence.bam /mnt/projects/fikret/data/bam/D-11-2208-18-R.bam
+ln /mnt/projects/fikret/data/bam/embl/C53DNACXX_FR13_14s005701-1-1_Rifatbegovic_lane7M20020103_sequence.bam /mnt/projects/fikret/data/bam/M-02-0103-21-R.bam
+ln /mnt/projects/fikret/data/bam/embl/C53DNACXX_FR14_14s005702-1-1_Rifatbegovic_lane8M20100681_sequence.bam /mnt/projects/fikret/data/bam/M-10-0681-28-Dx.bam
 
-ln -s /data/christian/fikret/data/current/bam/embl/C5324ACXX_FR5_14s005693-1-1_Rifatbegovic_lane2D19952120_sequence.bam /data/christian/fikret/data/current/bam/D-95-2120-06-R.bam
-ln -s /data/christian/fikret/data/current/bam/embl/C5324ACXX_FR5_14s005693-1-1_Rifatbegovic_lane2M19952120_sequence.bam /data/christian/fikret/data/current/bam/M-95-2120-06-R.bam
-ln -s /data/christian/fikret/data/current/bam/embl/C5324ACXX_FR5_14s005693-1-1_Rifatbegovic_lane2D19993072_sequence.bam /data/christian/fikret/data/current/bam/D-99-3072-24-R.bam
-ln -s /data/christian/fikret/data/current/bam/embl/C5324ACXX_FR5_14s005693-1-1_Rifatbegovic_lane2M19993072_sequence.bam /data/christian/fikret/data/current/bam/M-99-3072-24-R.bam
-ln -s /data/christian/fikret/data/current/bam/embl/C5324ACXX_FR5_14s005693-1-1_Rifatbegovic_lane2D20140613_sequence.bam /data/christian/fikret/data/current/bam/D-14-0613-26-R.bam
-ln -s /data/christian/fikret/data/current/bam/embl/C5324ACXX_FR5_14s005693-1-1_Rifatbegovic_lane2M20140613_sequence.bam /data/christian/fikret/data/current/bam/M-14-0613-26-R-x.bam
-ln -s /data/christian/fikret/data/current/bam/embl/C5324ACXX_FR6_14s005694-1-1_Rifatbegovic_lane3D20114162_sequence.bam /data/christian/fikret/data/current/bam/D-11-4162-34-R-x.bam
-ln -s /data/christian/fikret/data/current/bam/embl/C5324ACXX_FR6_14s005694-1-1_Rifatbegovic_lane3M20114162_sequence.bam /data/christian/fikret/data/current/bam/M-11-4162-34-R.bam
-ln -s /data/christian/fikret/data/current/bam/embl/C5324ACXX_FR6_14s005694-1-1_Rifatbegovic_lane3D20102326_sequence.bam /data/christian/fikret/data/current/bam/D-10-2326-20-R.bam
-ln -s /data/christian/fikret/data/current/bam/embl/C5324ACXX_FR6_14s005694-1-1_Rifatbegovic_lane3M20102326_sequence.bam /data/christian/fikret/data/current/bam/M-10-2326-20-R.bam
-ln -s /data/christian/fikret/data/current/bam/embl/C5324ACXX_FR6_14s005694-1-1_Rifatbegovic_lane3D19920825_sequence.bam /data/christian/fikret/data/current/bam/D-92-0825-25-R.bam
-ln -s /data/christian/fikret/data/current/bam/embl/C5324ACXX_FR6_14s005694-1-1_Rifatbegovic_lane3M19920825_sequence.bam /data/christian/fikret/data/current/bam/M-92-0825-25-R.bam
-ln -s /data/christian/fikret/data/current/bam/embl/C5324ACXX_FR7_14s005695-1-1_Rifatbegovic_lane5T20034304_sequence.bam /data/christian/fikret/data/current/bam/T-03-4304-03-Dx.bam
-ln -s /data/christian/fikret/data/current/bam/embl/C5324ACXX_FR7_14s005695-1-1_Rifatbegovic_lane5T220034304_sequence.bam /data/christian/fikret/data/current/bam/T2-03-4304-03-Dx.bam
-ln -s /data/christian/fikret/data/current/bam/embl/C5324ACXX_FR7_14s005695-1-1_Rifatbegovic_lane5D20034304_sequence.bam /data/christian/fikret/data/current/bam/D-03-4304-03-Dx.bam
-ln -s /data/christian/fikret/data/current/bam/embl/C5324ACXX_FR7_14s005695-1-1_Rifatbegovic_lane5M20034304_sequence.bam /data/christian/fikret/data/current/bam/M-03-4304-03-Dx.bam
-ln -s /data/christian/fikret/data/current/bam/embl/C5324ACXX_FR7_14s005695-1-1_Rifatbegovic_lane5D19981987_sequence.bam /data/christian/fikret/data/current/bam/D-98-1987-30-Dx.bam
-ln -s /data/christian/fikret/data/current/bam/embl/C5324ACXX_FR7_14s005695-1-1_Rifatbegovic_lane5M19981987_sequence.bam /data/christian/fikret/data/current/bam/M-98-1987-30-Dx.bam
-ln -s /data/christian/fikret/data/current/bam/embl/C5324ACXX_FR8_14s005696-1-1_Rifatbegovic_lane6D19930612_sequence.bam /data/christian/fikret/data/current/bam/D-93-0612-08-Dx.bam
-ln -s /data/christian/fikret/data/current/bam/embl/C5324ACXX_FR8_14s005696-1-1_Rifatbegovic_lane6M19930612_sequence.bam /data/christian/fikret/data/current/bam/M-93-0612-08-Dx.bam
-ln -s /data/christian/fikret/data/current/bam/embl/C5324ACXX_FR8_14s005696-1-1_Rifatbegovic_lane6D19950614_sequence.bam /data/christian/fikret/data/current/bam/D-95-0614-08-R.bam
-ln -s /data/christian/fikret/data/current/bam/embl/C5324ACXX_FR8_14s005696-1-1_Rifatbegovic_lane6M19950614_sequence.bam /data/christian/fikret/data/current/bam/M-95-0614-08-R.bam
-ln -s /data/christian/fikret/data/current/bam/embl/C5324ACXX_FR8_14s005696-1-1_Rifatbegovic_lane6D20122162_sequence.bam /data/christian/fikret/data/current/bam/D-12-2162-16-R.bam
-ln -s /data/christian/fikret/data/current/bam/embl/C5324ACXX_FR8_14s005696-1-1_Rifatbegovic_lane6M20122162_sequence.bam /data/christian/fikret/data/current/bam/M-12-2162-16-R.bam
-ln -s /data/christian/fikret/data/current/bam/embl/C5324ACXX_FR10_14s005698-1-1_Rifatbegovic_lane8D19950581_sequence.bam /data/christian/fikret/data/current/bam/D-95-0581-27-Dx.bam
-ln -s /data/christian/fikret/data/current/bam/embl/C5324ACXX_FR10_14s005698-1-1_Rifatbegovic_lane8M19950581_sequence.bam /data/christian/fikret/data/current/bam/M-95-0581-27-Dx.bam
-ln -s /data/christian/fikret/data/current/bam/embl/C5324ACXX_FR10_14s005698-1-1_Rifatbegovic_lane8D19952120_sequence.bam /data/christian/fikret/data/current/bam/D-95-2120-06-R-2.bam
-ln -s /data/christian/fikret/data/current/bam/embl/C5324ACXX_FR10_14s005698-1-1_Rifatbegovic_lane8M19952120_sequence.bam /data/christian/fikret/data/current/bam/M-95-2120-06-R-2.bam
-ln -s /data/christian/fikret/data/current/bam/embl/C5324ACXX_FR10_14s005698-1-1_Rifatbegovic_lane8D20132083_sequence.bam /data/christian/fikret/data/current/bam/D-13-2083-15-R.bam
-ln -s /data/christian/fikret/data/current/bam/embl/C5324ACXX_FR10_14s005698-1-1_Rifatbegovic_lane8M20132083_sequence.bam /data/christian/fikret/data/current/bam/M-13-2083-15-R.bam
+ln /mnt/projects/fikret/data/bam/embl/C5324ACXX_FR5_14s005693-1-1_Rifatbegovic_lane2D19952120_sequence.bam /mnt/projects/fikret/data/bam/D-95-2120-06-R.bam
+ln /mnt/projects/fikret/data/bam/embl/C5324ACXX_FR5_14s005693-1-1_Rifatbegovic_lane2M19952120_sequence.bam /mnt/projects/fikret/data/bam/M-95-2120-06-R.bam
+ln /mnt/projects/fikret/data/bam/embl/C5324ACXX_FR5_14s005693-1-1_Rifatbegovic_lane2D19993072_sequence.bam /mnt/projects/fikret/data/bam/D-99-3072-24-R.bam
+ln /mnt/projects/fikret/data/bam/embl/C5324ACXX_FR5_14s005693-1-1_Rifatbegovic_lane2M19993072_sequence.bam /mnt/projects/fikret/data/bam/M-99-3072-24-R.bam
+ln /mnt/projects/fikret/data/bam/embl/C5324ACXX_FR5_14s005693-1-1_Rifatbegovic_lane2D20140613_sequence.bam /mnt/projects/fikret/data/bam/D-14-0613-26-R.bam
+ln /mnt/projects/fikret/data/bam/embl/C5324ACXX_FR5_14s005693-1-1_Rifatbegovic_lane2M20140613_sequence.bam /mnt/projects/fikret/data/bam/M-14-0613-26-R-x.bam
+ln /mnt/projects/fikret/data/bam/embl/C5324ACXX_FR6_14s005694-1-1_Rifatbegovic_lane3D20114162_sequence.bam /mnt/projects/fikret/data/bam/D-11-4162-34-R-x.bam
+ln /mnt/projects/fikret/data/bam/embl/C5324ACXX_FR6_14s005694-1-1_Rifatbegovic_lane3M20114162_sequence.bam /mnt/projects/fikret/data/bam/M-11-4162-34-R.bam
+ln /mnt/projects/fikret/data/bam/embl/C5324ACXX_FR6_14s005694-1-1_Rifatbegovic_lane3D20102326_sequence.bam /mnt/projects/fikret/data/bam/D-10-2326-20-R.bam
+ln /mnt/projects/fikret/data/bam/embl/C5324ACXX_FR6_14s005694-1-1_Rifatbegovic_lane3M20102326_sequence.bam /mnt/projects/fikret/data/bam/M-10-2326-20-R.bam
+ln /mnt/projects/fikret/data/bam/embl/C5324ACXX_FR6_14s005694-1-1_Rifatbegovic_lane3D19920825_sequence.bam /mnt/projects/fikret/data/bam/D-92-0825-25-R.bam
+ln /mnt/projects/fikret/data/bam/embl/C5324ACXX_FR6_14s005694-1-1_Rifatbegovic_lane3M19920825_sequence.bam /mnt/projects/fikret/data/bam/M-92-0825-25-R.bam
+ln /mnt/projects/fikret/data/bam/embl/C5324ACXX_FR7_14s005695-1-1_Rifatbegovic_lane5T20034304_sequence.bam /mnt/projects/fikret/data/bam/T-03-4304-03-Dx.bam
+ln /mnt/projects/fikret/data/bam/embl/C5324ACXX_FR7_14s005695-1-1_Rifatbegovic_lane5T220034304_sequence.bam /mnt/projects/fikret/data/bam/T2-03-4304-03-Dx.bam
+ln /mnt/projects/fikret/data/bam/embl/C5324ACXX_FR7_14s005695-1-1_Rifatbegovic_lane5D20034304_sequence.bam /mnt/projects/fikret/data/bam/D-03-4304-03-Dx.bam
+ln /mnt/projects/fikret/data/bam/embl/C5324ACXX_FR7_14s005695-1-1_Rifatbegovic_lane5M20034304_sequence.bam /mnt/projects/fikret/data/bam/M-03-4304-03-Dx.bam
+ln /mnt/projects/fikret/data/bam/embl/C5324ACXX_FR7_14s005695-1-1_Rifatbegovic_lane5D19981987_sequence.bam /mnt/projects/fikret/data/bam/D-98-1987-30-Dx.bam
+ln /mnt/projects/fikret/data/bam/embl/C5324ACXX_FR7_14s005695-1-1_Rifatbegovic_lane5M19981987_sequence.bam /mnt/projects/fikret/data/bam/M-98-1987-30-Dx.bam
+ln /mnt/projects/fikret/data/bam/embl/C5324ACXX_FR8_14s005696-1-1_Rifatbegovic_lane6D19930612_sequence.bam /mnt/projects/fikret/data/bam/D-93-0612-08-Dx.bam
+ln /mnt/projects/fikret/data/bam/embl/C5324ACXX_FR8_14s005696-1-1_Rifatbegovic_lane6M19930612_sequence.bam /mnt/projects/fikret/data/bam/M-93-0612-08-Dx.bam
+ln /mnt/projects/fikret/data/bam/embl/C5324ACXX_FR8_14s005696-1-1_Rifatbegovic_lane6D19950614_sequence.bam /mnt/projects/fikret/data/bam/D-95-0614-08-R.bam
+ln /mnt/projects/fikret/data/bam/embl/C5324ACXX_FR8_14s005696-1-1_Rifatbegovic_lane6M19950614_sequence.bam /mnt/projects/fikret/data/bam/M-95-0614-08-R.bam
+ln /mnt/projects/fikret/data/bam/embl/C5324ACXX_FR8_14s005696-1-1_Rifatbegovic_lane6D20122162_sequence.bam /mnt/projects/fikret/data/bam/D-12-2162-16-R.bam
+ln /mnt/projects/fikret/data/bam/embl/C5324ACXX_FR8_14s005696-1-1_Rifatbegovic_lane6M20122162_sequence.bam /mnt/projects/fikret/data/bam/M-12-2162-16-R.bam
+ln /mnt/projects/fikret/data/bam/embl/C5324ACXX_FR10_14s005698-1-1_Rifatbegovic_lane8D19950581_sequence.bam /mnt/projects/fikret/data/bam/D-95-0581-27-Dx.bam
+ln /mnt/projects/fikret/data/bam/embl/C5324ACXX_FR10_14s005698-1-1_Rifatbegovic_lane8M19950581_sequence.bam /mnt/projects/fikret/data/bam/M-95-0581-27-Dx.bam
+ln /mnt/projects/fikret/data/bam/embl/C5324ACXX_FR10_14s005698-1-1_Rifatbegovic_lane8D19952120_sequence.bam /mnt/projects/fikret/data/bam/D-95-2120-06-R-2.bam
+ln /mnt/projects/fikret/data/bam/embl/C5324ACXX_FR10_14s005698-1-1_Rifatbegovic_lane8M19952120_sequence.bam /mnt/projects/fikret/data/bam/M-95-2120-06-R-2.bam
+ln /mnt/projects/fikret/data/bam/embl/C5324ACXX_FR10_14s005698-1-1_Rifatbegovic_lane8D20132083_sequence.bam /mnt/projects/fikret/data/bam/D-13-2083-15-R.bam
+ln /mnt/projects/fikret/data/bam/embl/C5324ACXX_FR10_14s005698-1-1_Rifatbegovic_lane8M20132083_sequence.bam /mnt/projects/fikret/data/bam/M-13-2083-15-R.bam
 
-ln -s /data/christian/fikret/data/current/bam/embl/C53B2ACXX_FR9_14s005697-1-2_Rifatbegovic_lane2T19991650_sequence.bam /data/christian/fikret/data/current/bam/T-99-1650-04-Dx.bam
-ln -s /data/christian/fikret/data/current/bam/embl/C53B2ACXX_FR9_14s005697-1-2_Rifatbegovic_lane22T19991650_sequence.bam /data/christian/fikret/data/current/bam/T2-99-1650-04-Dx.bam
-ln -s /data/christian/fikret/data/current/bam/embl/C53B2ACXX_FR9_14s005697-1-2_Rifatbegovic_lane2D19991650_sequence.bam /data/christian/fikret/data/current/bam/D-99-1650-04-Dx.bam
-ln -s /data/christian/fikret/data/current/bam/embl/C53B2ACXX_FR9_14s005697-1-2_Rifatbegovic_lane2M19991650_sequence.bam /data/christian/fikret/data/current/bam/M-99-1650-04-Dx.bam
-ln -s /data/christian/fikret/data/current/bam/embl/C53B2ACXX_FR9_14s005697-1-2_Rifatbegovic_lane2D20090606_sequence.bam /data/christian/fikret/data/current/bam/D-09-0606-11-R.bam
-ln -s /data/christian/fikret/data/current/bam/embl/C53B2ACXX_FR9_14s005697-1-2_Rifatbegovic_lane2M20090606_sequence.bam /data/christian/fikret/data/current/bam/M-09-0606-11-R.bam
+ln /mnt/projects/fikret/data/bam/embl/C53B2ACXX_FR9_14s005697-1-2_Rifatbegovic_lane2T19991650_sequence.bam /mnt/projects/fikret/data/bam/T-99-1650-04-Dx.bam
+ln /mnt/projects/fikret/data/bam/embl/C53B2ACXX_FR9_14s005697-1-2_Rifatbegovic_lane22T19991650_sequence.bam /mnt/projects/fikret/data/bam/T2-99-1650-04-Dx.bam
+ln /mnt/projects/fikret/data/bam/embl/C53B2ACXX_FR9_14s005697-1-2_Rifatbegovic_lane2D19991650_sequence.bam /mnt/projects/fikret/data/bam/D-99-1650-04-Dx.bam
+ln /mnt/projects/fikret/data/bam/embl/C53B2ACXX_FR9_14s005697-1-2_Rifatbegovic_lane2M19991650_sequence.bam /mnt/projects/fikret/data/bam/M-99-1650-04-Dx.bam
+ln /mnt/projects/fikret/data/bam/embl/C53B2ACXX_FR9_14s005697-1-2_Rifatbegovic_lane2D20090606_sequence.bam /mnt/projects/fikret/data/bam/D-09-0606-11-R.bam
+ln /mnt/projects/fikret/data/bam/embl/C53B2ACXX_FR9_14s005697-1-2_Rifatbegovic_lane2M20090606_sequence.bam /mnt/projects/fikret/data/bam/M-09-0606-11-R.bam
