@@ -24,7 +24,7 @@ geneAnnot            = INPUT(path="/mnt/projects/fikret/data/ensembl.homo_sapien
 geneGO               = INPUT(path="/opt/moksiskaan/pipeline/exec/output/geneGO_9606.csv")                              // Gene Ontology annotations of all genes; comes with anduril-moksiskaan Docker image
 enrichmentTable      = INPUT(path="/opt/moksiskaan/pipeline/exec/output/GOEnrichment_9606.csv")                        // Moksiskaan specific a priori probabilities for the Gene ontology terms; comes with anduril-moksiskaan Docker image
 ensemblDb            = INPUT(path="/usr/local/share/anduril-bundles/moksiskaan/etc/ensemblHomoSapiens.properties")     // JDBC parameters for Ensembl~\cite{Flicek2008} database; comes with anduril-moksiskaan Docker image
-genesetAnnotation    = INPUT(path="/mnt/projects/fikret/data/geneset_annotation.tsv")                                  // assigns gene sets to categories for filtering
+genesetAnnotation    = INPUT(path="/mnt/projects/generic/data/ccri/geneset_annotation.tsv")                            // assigns gene sets to categories for filtering
 latexHeaderMutation  = INPUT(path="/mnt/projects/fikret/scripts/anduril/latexHeaderMutation")
 
 moksiskaanInit = MoksiskaanInit(showLog='EnsemblImport,PathwayCommonsImport,PINAImport,WikiPathways')
@@ -620,6 +620,36 @@ vennSetTableReport_DTCvsMNC_AND_TUMvsDTC_AND_TUMvsMNC = VennSetTableReport
 degReportLst["vennSetTableReport_DTCvsMNC_AND_TUMvsDTC_AND_TUMvsMNC"] = vennSetTableReport_DTCvsMNC_AND_TUMvsDTC_AND_TUMvsMNC.report
 
 //------------------------------------------------------------------------------------------------
+//--- EXPRESSION BOX PLOTS OF SELECTED GENES
+//------------------------------------------------------------------------------------------------
+
+boxplotCustom = ExpressionBoxPlot
+(
+	expr   = deseqExprMatrix.expr,
+	force sampleGroups = sampleGroups,
+	includeGroups="TUM,DTCdia,DTCrel,MNC",
+	annotation = geneAnnot,
+	hgnc = "MT-TF,MT-RNR1,MT-TV,MT-RNR2,MT-TL1,MT-ND1,MT-TI,MT-TQ,MT-TM,MT-ND2,MT-TW,MT-TA,MT-TN,MT-TC,MT-TY,MT-CO1,MT-TS1,MT-TD,MT-CO2,MT-TK,MT-ATP8,MT-ATP6,MT-CO3,MT-TG,MT-ND3,MT-TR,MT-ND4L,MT-ND4,MT-TH,MT-TS2,MT-TL2,MT-ND5,MT-ND6,MT-TE,MT-CYB,MT-TT,MT-TP",
+	nRow = 6,
+	nCol = 7,
+	height = 10,
+	labelOutliers=false,
+	cexSampleLabel=0.3,
+	cexGroupLabel=0.7,
+	caption = 'Expression values of mitochondria encoded genes.',
+	sectionTitle="Mitochondria encoded genes", 
+	sectionType="subsection"
+)
+
+boxplotSelectedGenes = LatexCombiner
+(
+	array        = {boxplotCustom.document}, 
+	pagebreak    = true,
+	sectionTitle = "Expression values of selected genes", 
+	sectionType  = "section"
+)
+
+//------------------------------------------------------------------------------------------------
 //--- POSITIONAL GENE ENRICHMENT
 //------------------------------------------------------------------------------------------------
 
@@ -663,8 +693,9 @@ combinedReport = LatexCombiner
 (
 	array={
 		experimentReport,
-		qcReport,
+		qcReport.report,
 		degReport,
+		boxplotSelectedGenes,
 		pgeReport,
 		rConfig.report
 	}
@@ -681,6 +712,29 @@ combinedPDF = LatexPDF
 
 @out.out.filename = shortName + "-main.pdf"
 OUTPUT(combinedPDF.document)
+
+//------------------------------------------------------------------------------------------------
+//--- EXCEL FILES WITH DIFFERENTIALLY EXPRESSED GENES
+//------------------------------------------------------------------------------------------------
+
+include "/mnt/projects/iamp/scripts/anduril/degExcel.and"
+
+degExcel = degExcelOutput
+(
+	degTables   = degTables,
+	degAllLst   = degAllLst,
+	linkRule    = ensemblRef,
+	geneNames   = geneNames,
+	geneAnnot   = geneAnnot,
+	comparisons  = comparisons,
+	fdrCutoff    = 1
+)
+	
+@out.out.filename = shortName + "-DE-genes.xls"
+OUTPUT(degExcel.degs)
+
+@out.out.filename = shortName + "-all-genes.xls"
+OUTPUT(degExcel.allGenes)
 
 //------------------------------------------------------------------------------------------------
 //--- GENE SET ENRICHMENT ANALYSIS (GSEA)
@@ -733,6 +787,7 @@ for ID, comparison : comparisons
 		        "/mnt/projects/generic/data/msigdb5.0/c6.all.v5.0.symbols.gmt," + 
 		        "/mnt/projects/generic/data/msigdb5.0/c7.all.v5.0.symbols.gmt," + 
 		        "/mnt/projects/generic/data/msigdb5.0/h.all.v5.0.symbols.gmt," +
+		        "/mnt/projects/generic/data/ccri/ccri_custom_gene_sets.gmt," +
 		        "/mnt/projects/generic/data/laurenti_2013_hematopoietic_lineages.gmt", 
 		options = "-nperm " + permutations + " -set_max " + maxSetSize[category] + " -set_min " + minSetSize[category],
 		@memory  = 7000,
@@ -838,9 +893,9 @@ gseaReport = GSEAReport
 	topNTable   = 100,
 	expression = degAllLst,
 	geneNames  = geneNames,
-	sigCutoff = 1e-3,
+	sigCutoff = 1e-2,
 	hsigCutoff = 1e-5,
-	overlapSigCutoff = 1e-3,
+	overlapSigCutoff = 1e-2,
 	overlapHSigCutoff = 1e-5,
 	@enabled = runGSEA
 )
