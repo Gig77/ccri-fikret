@@ -8,7 +8,12 @@ authors = "Christian Frech and Marko Laakso"
 
 runMutations = false
 runHeatmap   = false
-runGSEA      = true
+runGSEA      = false
+runNetwork   = true
+
+maxNA    	 = 0.90    // fraction of samples allowed to have NA values before gene is discarded
+pGOEnrich    = 0.01    // minimum p-value to call a GO term enriched 
+
 
 //------------------------------------------------------------------------------------------------
 //--- INPUT DATA
@@ -31,25 +36,14 @@ moksiskaanInit = MoksiskaanInit(showLog='EnsemblImport,PathwayCommonsImport,PINA
 ensemblRef = XrefLinkRule(moksiskaan = moksiskaanInit.connection, columns = "Ensembl=Ensembl", xrefTypes  = XrefType_Ensembl_gene)
 
 //------------------------------------------------------------------------------------------------
-//--- CONSTANTS
+//--- PRELUDE
 //------------------------------------------------------------------------------------------------
-
-//fcLimit  = 3       // minimum fold-change for a differentially expressed gene
-//pLimit   = 1e-7    // minimum p-value to call a gene significantly differentially expressed
-//qLimit   = 1e-6     // minimum adjusted p-value to call a gene significantly differentially expressed
-//minExpr  = 200.00  // minimum normalized expression level in either of the two compared groups to call a gene differentially expressed
-maxNA    		= 0.90    // fraction of samples allowed to have NA values before gene is discarded
-pGOEnrich       = 0.01    // minimum p-value to call a GO term enriched 
 
 hyperlinkRuleEnsemblGeneCards = StringInput(content=
 	"URL\trefCol\tvalueCol\n" +
 	"http://www.ensembl.org/id/$ID$\tEnsembl\tEnsembl\n" +
 	"http://www.genecards.org/cgi-bin/carddisp.pl?gene=$ID$\tGene\tGene\n"
 )
-
-//------------------------------------------------------------------------------------------------
-//--- PRELUDE
-//------------------------------------------------------------------------------------------------
 
 rConfig = RConfigurationReport(packages = "base,csbl.go,DESeq2,igraph", sectionType = "section")
 bibtexMoksiskaan = INPUT(path="/usr/local/share/anduril-bundles/moksiskaan/components/report-BibTeX/moksiskaan.bib")
@@ -250,30 +244,55 @@ for ID, comparison : comparisons
 	    @name                   = "deseq_" + ID
 	)
 	degAllLst[ID] = deseq.results
+
+	// annotate deseq output with gene names, locations, and descriptions 
+	quotedSampleIds = 'G."' + std.strReplace(comparison.sampleIds, ',', '", G."') + '"'	
+	deseqAnnotated = TableQuery
+	(
+		table1 = deseq     @require,
+		table2 = geneNames @require,
+		table3 = geneAnnot @require,
+		query  = '''
+			SELECT G."ids"                        AS "ids",
+			A."Gene"                              AS "Gene",
+			SUBSTR(D."Description", 1, 65)        AS "Description",
+			D."Chromosome Name"                   AS "chr",
+			D."Gene Start (bp)"                   AS "start",
+			D."Gene End (bp)"                     AS "end",
+			CONCAT(D."Chromosome Name", D."Band") AS "Band",
+			G."meanExprE'''+ID+'''"               AS "meanA",
+			G."meanExprC'''+ID+'''"               AS "meanB",
+			G."fc'''+ID+'''"                      AS "fc",
+			G."p'''+ID+'''"                       AS "p",
+			G."q'''+ID+'''"                       AS "q",
+			CASEWHEN(G."fc'''+ID+'''" > 0, 1, -1) AS "status",
+			'''+quotedSampleIds+'''
+			FROM table1 G
+				LEFT OUTER JOIN table2 AS A ON (G."ids" = A."Ensembl")
+				LEFT OUTER JOIN table3 AS D ON (G."ids" = D."Ensembl Gene ID")
+			ORDER  BY "q", ABS("fc") DESC
+		''',
+		@name  = "deseqAnnotated_"+ID
+	)
 		
 	// subset statistically significant DEGs
 	degCalled = TableQuery
 	(
-		table1 = deseq @require,
+		table1 = deseqAnnotated @require,
 		query  = 
 			"""
-			SELECT DISTINCT "ids"                 AS "ids", 
-			                "fc"""+ID+""""        AS "fc", 
-			                "meanExprE"""+ID+"""" AS "meanExprE", 
-			                "meanExprC"""+ID+"""" AS "meanExprC", 
-			                "p"""+ID+""""         AS "p", 
-			                "q"""+ID+""""         AS "q" 
+			SELECT DISTINCT *
 			FROM   table1
-				WHERE  (ABS("fc"""+ID+"""")    >= """ + comparison.fcLimit + """) AND
-					   ("p"""+ID+""""          <= """ + comparison.pLimit  + """) AND
-					   ("q"""+ID+""""          <= """ + comparison.qLimit  + """) AND
-					   (("meanExprE"""+ID+"""" >= """ + comparison.exprLimit + """) OR
-					   ("meanExprC"""+ID+""""  >= """ + comparison.exprLimit + """))
+				WHERE  (ABS("fc") >= """ + comparison.fcLimit + """) AND
+					   ("p"       <= """ + comparison.pLimit  + """) AND
+					   ("q"       <= """ + comparison.qLimit  + """) AND
+					   (("meanA"  >= """ + comparison.exprLimit + """) OR
+					   ( "meanB"  >= """ + comparison.exprLimit + """))
 					   ORDER  BY 1
 			""",
 			@name  = "degCalled_"+ID
 	)
-	degCalledLst[ID] = degCalled.table
+	degCalledLst[ID] = degCalled.table			
 }
 
 //------------------------------------------------------------------------------------------------
@@ -287,7 +306,7 @@ include "/mnt/projects/iamp/scripts/anduril/goEnrichment.and"
 include "/mnt/projects/iamp/scripts/anduril/expressionHeatmap.and"
 
 degReportLst = record()
-degTables = record()
+deseqColumnTypes = StringInput(content="Table\tColumn\tType\ntable1\tfc\tDOUBLE\ntable1\tstatus\tINTEGER\n")  // required if degTable is empty (= no significant DEGs)
 for ID, comparison : comparisons 
 {	
 	//--- VOLCANO PLOT -----------------------------------------------------------------------------------------------------//
@@ -307,42 +326,11 @@ for ID, comparison : comparisons
 		@name = "degVolcanoPlot_" + ID
 	)
 
-	//--- PREPARE TABLE WITH DIFFERENTIALLY EXPRESSED GENES IN OUTPUT FORMAT ------------------------------------------------//
-	
-	degTable = TableQuery
-	(
-		table1 = degCalledLst[ID] @require,
-		table2 = geneNames        @require,
-		table3 = geneAnnot        @require,
-		query  = '''
-			SELECT G."ids"                        AS "Ensembl",
-			A."Gene"                              AS "Gene",
-			G."fc"                                AS "fc",
-			G."meanExprE"                         AS "exprA",
-			G."meanExprC"                         AS "exprB",
-			G."q"                                 AS "qValue",
-			CONCAT(D."Chromosome Name", D."Band") AS "Band",
-			D."Chromosome Name"                   AS "chr",
-			D."Gene Start (bp)"                   AS "start",
-			D."Gene End (bp)"                     AS "end",
-			SUBSTR(D."Description", 1, 65)        AS "Description",
-			CASEWHEN(G."fc" > 0, 1, -1)           AS "status"
-			FROM table1 G
-				LEFT OUTER JOIN table2 AS A ON (G."ids" = A."Ensembl")
-				LEFT OUTER JOIN table3 AS D ON (G."ids" = D."Ensembl Gene ID")
-			ORDER  BY "qValue", ABS("fc") DESC
-		''',
-		engine = "h2",
-		@name  = "degTable_"+ID
-	)
-
-	degTables[ID] = degTable  // we write them to an Excel file later
-
 	//--- TABLES WITH UP- AND DOWN-REULATED GENES --------------------------------------------------------------------------//
 
 	degTableUp = getDEGTableReport
 	(
-		degs = degTable,
+		degs = degCalledLst[ID],
 		degReportRefs = ensemblRef,
 		direction = "up",
 		comparison = comparison,
@@ -354,7 +342,7 @@ for ID, comparison : comparisons
 
 	degTableDn = getDEGTableReport
 	(
-		degs = degTable,
+		degs = degCalledLst[ID],
 		degReportRefs = ensemblRef,
 		direction = "down",
 		comparison = comparison,
@@ -368,7 +356,7 @@ for ID, comparison : comparisons
 
 	degBoxplotUp = getDEGBoxPlots
 	(
-		degs = degTable,
+		degs = degCalledLst[ID],
 		exprMatrix = deseqExprMatrix.expr,
 		sampleGroups=inputSampleGroups,
 		geneAnnot=geneAnnot,
@@ -382,7 +370,7 @@ for ID, comparison : comparisons
 
 	degBoxplotDn = getDEGBoxPlots
 	(
-		degs = degTable,
+		degs = degCalledLst[ID],
 		exprMatrix = deseqExprMatrix.expr,
 		sampleGroups=inputSampleGroups,
 		geneAnnot=geneAnnot,
@@ -437,29 +425,30 @@ for ID, comparison : comparisons
 	
 	statusTable = TableQuery
 	(
-		table1   = degTables[ID] @require,
+		table1   = degCalledLst[ID] @require,
 		table2   = degAllLst[ID] @require,
+		columnTypes = deseqColumnTypes,
 		query    = '''
-			SELECT "Ensembl", "status" FROM table1
+			SELECT "ids" AS "Ensembl", "status" FROM table1
 			UNION
 			SELECT T2."ids" AS "Ensembl", 1 AS "status"
-			FROM   table2 T2 LEFT JOIN table1 T1 ON T2."ids" = T1."Ensembl" 
-			WHERE  T1."Ensembl" IS NULL AND T2."meanExpr'''+ID+'''" >= 10 AND T2."q'''+ID+'''" < 0.01 AND T2."fc'''+ID+'''" >= 1
+			FROM   table2 T2 LEFT JOIN table1 T1 ON T2."ids" = T1."ids" 
+			WHERE  T1."ids" IS NULL AND T2."meanExpr'''+ID+'''" >= 10 AND T2."q'''+ID+'''" < 0.01 AND T2."fc'''+ID+'''" >= 1
 			UNION
 			SELECT T2."ids" AS "Ensembl", -1 AS "status"
-			FROM   table2 T2 LEFT JOIN table1 T1 ON T2."ids" = T1."Ensembl" 
-			WHERE  T1."Ensembl" IS NULL AND T2."meanExpr'''+ID+'''" >= 10 AND T2."q'''+ID+'''" < 0.01 AND T2."fc'''+ID+'''" <= -1
+			FROM   table2 T2 LEFT JOIN table1 T1 ON T2."ids" = T1."ids" 
+			WHERE  T1."ids" IS NULL AND T2."meanExpr'''+ID+'''" >= 10 AND T2."q'''+ID+'''" < 0.01 AND T2."fc'''+ID+'''" <= -1
 			UNION
 			SELECT T2."ids" AS "Ensembl", 0 AS "status"
-			FROM   table2 T2 LEFT JOIN table1 T1 ON T2."ids" = T1."Ensembl" 
-			WHERE  T1."Ensembl" IS NULL AND T2."meanExpr'''+ID+'''" >= 300 AND T2."q'''+ID+'''" >= 0.9 AND T2."fc'''+ID+'''" > -0.1 AND T2."fc'''+ID+'''" < 0.1
+			FROM   table2 T2 LEFT JOIN table1 T1 ON T2."ids" = T1."ids" 
+			WHERE  T1."ids" IS NULL AND T2."meanExpr'''+ID+'''" >= 300 AND T2."q'''+ID+'''" >= 0.9 AND T2."fc'''+ID+'''" > -0.1 AND T2."fc'''+ID+'''" < 0.1
 			UNION
 			SELECT T2."ids" AS "Ensembl", -2 AS "status"
-			FROM   table2 T2 LEFT JOIN table1 T1 ON T2."ids" = T1."Ensembl" 
-			WHERE  T1."Ensembl" IS NULL AND T2."meanExpr'''+ID+'''" < 10
+			FROM   table2 T2 LEFT JOIN table1 T1 ON T2."ids" = T1."ids" 
+			WHERE  T1."ids" IS NULL AND T2."meanExpr'''+ID+'''" < 10
             ''',
-		engine   = "h2",
-		@name    = "statusTable_"+ID
+		@name    = "statusTable_"+ID,
+		@enabled = runNetwork
 	)
 	
     network = InteractionNetwork
@@ -504,7 +493,7 @@ for ID, comparison : comparisons
 		statusFilter      = "NA",
 		sectionType       = "subsubsection",
 		@name             = "network_"+ID,
-		@enabled          = true
+		@enabled          = runNetwork
 	)
 	
 	//--- COMBINE REPORTS -----------------------------------------------------------------------------//
@@ -721,7 +710,7 @@ include "/mnt/projects/iamp/scripts/anduril/degExcel.and"
 
 degExcel = degExcelOutput
 (
-	degTables   = degTables,
+	degTables   = degCalledLst,
 	degAllLst   = degAllLst,
 	linkRule    = ensemblRef,
 	geneNames   = geneNames,
