@@ -7,9 +7,12 @@ shortName = "NB-DTC"
 authors = "Christian Frech and Marko Laakso"
 
 runMutations = false
-runHeatmap   = false
+runHeatmap   = true
 runGSEA      = false
 runNetwork   = true
+runVenn      = false
+runPGE       = true
+runGO        = true
 
 maxNA    	 = 0.90    // fraction of samples allowed to have NA values before gene is discarded
 pGOEnrich    = 0.01    // minimum p-value to call a GO term enriched 
@@ -19,7 +22,6 @@ pGOEnrich    = 0.01    // minimum p-value to call a GO term enriched
 //--- INPUT DATA
 //------------------------------------------------------------------------------------------------
 
-inputBamDir          = INPUT(path="/mnt/projects/fikret/results/gsnap", recursive=false)
 inputSamples         = INPUT(path="/mnt/projects/fikret/data/sample_key.csv")
 inputSampleGroups    = INPUT(path="/mnt/projects/fikret/data/sample_groups.csv")
 inputComparisons     = INPUT(path="/mnt/projects/fikret/data/comparisons.csv")
@@ -59,6 +61,20 @@ docTemplate = LatexTemplate
 	printTOC = true
 )
 
+@out.optOut1.filename = "Homo_sapiens.GRCh37.75.etv6runx1.norRNA.gtf.gz"
+gtfNorRNA = BashEvaluate
+(
+	var1 = gtf,
+	script = '''
+		set -ex
+		tmpdir=$( gettempdir )
+		zcat -f @var1@ | grep -P 'gene_biotype "(rRNA|Mt_rRNA)"' | perl -ne '/(ENSG[^\"]+)/; print "$1\n"' | sort | uniq > $tmpdir/ensemblid.rrna
+		zcat -f @var1@ | grep -vf $tmpdir/ensemblid.rrna | gzip -c > @optOut1@.part
+		mv @optOut1@.part @optOut1@
+	'''
+)
+
+
 //------------------------------------------------------------------------------------------------
 //--- SAMPLES
 //------------------------------------------------------------------------------------------------
@@ -69,7 +85,12 @@ for entry : std.itercsv(inputSamples)
 	samples[""+entry.ID] =
 	{
 		'alias' = entry.Alias,
-		'description' = entry.Description
+		'file' = entry.File,
+		'exclude' = false
+	}
+
+	if (entry.Exclude == "Yes" || entry.Exclude == "YES" || entry.Exclude == "yes") {
+		samples[""+entry.ID]["exclude"] = true
 	}
 }
 
@@ -109,7 +130,7 @@ for comparison : std.itercsv(inputComparisons)
 		columnOut = "Sample",
 		isList    = true,
 		regexp1   = "ID=(" + gCase + "|" + gControl + ")",
-		@name     = "sampleIds_" + comparison.ID
+		@name     = "sampleIds_" + std.quote(comparison.ID, type="Anduril")
 	)
 
 	// add group record	
@@ -120,6 +141,7 @@ for comparison : std.itercsv(inputComparisons)
 		'otherG'      = comparison.NonMembers,
 		'sampleIdLst' = sampleIdLst.ids,
 		'sampleIds'   = std.strReplace(std.fRead(sampleIdLst.ids), "\n", ",", "^[^,]+,(.*)", "$1", ",$", ""),
+		'design'      = comparison.design,
 		'fcLimit'     = comparison.fcLimit,
 		'pLimit'      = comparison.pLimit,
 		'qLimit'      = comparison.qLimit,
@@ -141,23 +163,33 @@ experimentReport = experimentalSetupReport
 	samples            = inputSamples,
 	sampleGroups       = sampleGroups,
 	comparisons        = inputComparisons,
-	sampleTableColumns = "ID,Alias,File",
-	sampleTableFormat  = "ccl"
+	sampleTableColumns = "Sample,Alias,TP,Material,P ID,Rel,Dead,MNA,ATRX,2p gain,4p loss,6q loss,7q gain,11q del,17q gain",
+	sampleTableFormat  = "ccccccccccccccc"
 )
 
 //------------------------------------------------------------------------------------------------
 //--- ALIGNMENT
 //------------------------------------------------------------------------------------------------
 
-// use pre-aligned data (GSNAP)
-
-alignedBamsArray = Folder2Array(folder1 = inputBamDir, filePattern = "(.*(-R|-Dx|-R-\\d)).gsnap.filtered.bam$")
-
 alignedBams = record()
-for bam : std.iterArray(alignedBamsArray) 
+for id, sample : samples 
 {
-	alias = samples[bam.key+""].alias
-	alignedBams[alias] = INPUT(path=bam.file)
+	@out.alignment.filename = sample.alias + '.gsnap.sorted.dupmarked.bam'
+	gsnap = GSNAP
+	(
+		reads     = INPUT(path=sample.file), 
+		options   = "--db=g1k_v37_etv6runx1 --dir=/data_synology/anduril/docker-images/anduril-gsnap_2014_12_28-human_g1k_v37/db/human_g1k_v37 --use-splicing=g1k_v37.splicesites --use-snps=g1k_v37.snp138 --nthreads 15 --maxsearch=100 --npaths=1 --max-mismatches=1 --novelsplicing=0 --batch=4 --genome-unk-mismatch=0",
+		docker    = "biowaste:5000/anduril/gsnap",
+		inputType = "auto",
+		@cpu      = 10, 
+		@memory   = 40000,
+		@name     = "gsnap_" + sample.alias,
+		@execute  = "once" 
+	)
+
+	if (!sample.exclude) {
+		alignedBams[sample.alias] = gsnap.alignment
+	}
 }
 
 //------------------------------------------------------------------------------------------------
@@ -171,12 +203,18 @@ for sample, bam : alignedBams
 	count = BashEvaluate
 	(
 		var1 = bam,
-		var2 = gtf,
-		script = "htseq-count -f bam -t exon -s no @var1@ @var2@ | grep -v '^__' > @optOut1@",
+		var2 = gtfNorRNA.optOut1,
+		script = "htseq-count -f bam -t exon -s no @var1@ @var2@ > @optOut1@.part && mv @optOut1@.part @optOut1@",
 		@name = "htseq_" + sample
 	)
 	bamCounts[sample] = count.optOut1
 }
+
+htseqExprMatrix = HTSeqExprMatrix
+(
+	samples      = Array2CSV(array=bamCounts, @name="htseq_filelist"),
+	inclusionKey = ""
+)
 
 deseqExprMatrix = DESeqExpr
 (
@@ -194,16 +232,49 @@ include "/mnt/projects/iamp/scripts/anduril/qc.and"
 
 qcReport  = getQCReport
 (
-	alignedBAMs = alignedBams,
-    gtf = gtf,
-    counts = bamCounts,
-    force expr   = deseqExprMatrix.expr,
-    force groups = sampleGroupsUnique,
-    readStatsYMax = 50,
+	samples                = samples,
+	alignedBAMs            = alignedBams,
+    gtf                    = gtf,
+    countMatrix            = htseqExprMatrix.countArray["all"],
+    force expr             = deseqExprMatrix.expr,
+    force groups           = sampleGroupsUnique,
+    force inputSamples     = inputSamples,
+    readStatsYMax          = 50,
     readStatsSamplesPerRow = 13,
-    cexClusterHeatmap = 0.4,
-    cexGeneBodyCoverage = 0.5
+    cexClusterHeatmap      = 0.25,
+    cexMDS                 = 0.4,
+    cexGeneBodyCoverage    = 0.3,
+    gcBiasYMax             = 4,
+    gcBiasYMin             = -3
 )
+
+//------------------------------------------------------------------------------------------------
+//--- MUTATION REPORT
+//------------------------------------------------------------------------------------------------
+
+include "/mnt/projects/generic/scripts/anduril/mutations.and"
+
+mutationReport = MutationReport
+(
+	alignedBams  = alignedBams,
+	sectionTitle = "Mutated genes",
+	sectionType  = "section",
+	@enabled     = runMutations
+)
+
+mutationPDF = LatexPDF
+(
+	document = mutationReport,
+	header   = latexHeaderMutation,
+	footer   = docTemplate.footer,
+	useRefs  = true,
+	verbose  = false,
+	@enabled = runMutations
+)
+
+@out.out.filename = shortName + "-mutations.pdf"
+OUTPUT(mutationPDF.document)
+
 
 //------------------------------------------------------------------------------------------------
 //--- DIFFERENTIAL GENE EXPRESSION ANALYSIS
@@ -232,16 +303,17 @@ for ID, comparison : comparisons
 {
 	deseq = DESeq2
 	(
+		countMatrix             = htseqExprMatrix.countArray["all"],
 		samples                 = inputSamples,
-		sampleGroups            = inputSampleGroups,
-		counts                  = bamCounts,
-	    controlGroup            = comparison.controlG,
+		force sampleGroups      = inputSampleGroups,
 	    caseGroup               = comparison.caseG,
+	    controlGroup            = comparison.controlG,
 	    otherGroups             = comparison.otherG,
-	    design                  = "~ group",
-	    label                   = ID,
-	    minReplicatesForReplace = 7,
-	    @name                   = "deseq_" + ID
+		design                  = comparison.design,
+	    colSuffix               = ID,
+	    minReplicatesForReplace = 5,
+	    cooksCutoff             = 0.7,
+	    @name                   = "deseq_" + std.quote(ID, type="Anduril")
 	)
 	degAllLst[ID] = deseq.results
 
@@ -270,9 +342,9 @@ for ID, comparison : comparisons
 			FROM table1 G
 				LEFT OUTER JOIN table2 AS A ON (G."ids" = A."Ensembl")
 				LEFT OUTER JOIN table3 AS D ON (G."ids" = D."Ensembl Gene ID")
-			ORDER  BY "q", ABS("fc") DESC
+			ORDER BY ABS("fc") DESC, "q"
 		''',
-		@name  = "deseqAnnotated_"+ID
+		@name  = "deseqAnnotated_" + std.quote(ID, type="Anduril")
 	)
 		
 	// subset statistically significant DEGs
@@ -288,9 +360,9 @@ for ID, comparison : comparisons
 					   ("q"       <= """ + comparison.qLimit  + """) AND
 					   (("meanA"  >= """ + comparison.exprLimit + """) OR
 					   ( "meanB"  >= """ + comparison.exprLimit + """))
-					   ORDER  BY 1
+					   ORDER BY ABS("fc") DESC, "q"
 			""",
-			@name  = "degCalled_"+ID
+			@name  = "degCalled_" + std.quote(ID, type="Anduril")
 	)
 	degCalledLst[ID] = degCalled.table			
 }
@@ -317,13 +389,13 @@ for ID, comparison : comparisons
 		geneNames = geneNames,
 		sigthresh = comparison.qLimit,
 		lfcthresh = comparison.fcLimit,
-		labelTopN = 30,
-		cexLabel = 0.5,
+		labelTopN = 20,
+		cexLabel = 0.4,
 		sampleSize = 1000,
 		caption = "Scatter plot of log2 fold-changes vs. p-values (aka 'volcano plot') comparing gene expression between " + comparison.caseG + " and " + comparison.controlG + " samples.",
-		sectionTitle="Volcano plot " + ID,
+		sectionTitle="Volcano plot " + std.quote(ID, type="Latex"),
 		sectionType="subsubsection",
-		@name = "degVolcanoPlot_" + ID
+		@name = "degVolcanoPlot_" + std.quote(ID, type="Anduril")
 	)
 
 	//--- TABLES WITH UP- AND DOWN-REULATED GENES --------------------------------------------------------------------------//
@@ -335,9 +407,10 @@ for ID, comparison : comparisons
 		direction = "up",
 		comparison = comparison,
 		ID=ID,
+		design = comparison.design,
 		section="Genes with higher expression in "+comparison.caseG+" than "+comparison.controlG+" samples",
 		sectionType="subsubsection",
-		@name = "degTableUp_"+ID
+		@name = "degTableUp_" + std.quote(ID, type="Anduril")
 	)
 
 	degTableDn = getDEGTableReport
@@ -347,9 +420,10 @@ for ID, comparison : comparisons
 		direction = "down",
 		comparison = comparison,
 		ID=ID,
+		design = comparison.design,
 		section="Genes with lower expression in "+comparison.caseG+" than "+comparison.controlG+" samples",
 		sectionType="subsubsection",
-		@name = "degTableDn_"+ID
+		@name = "degTableDn_" + std.quote(ID, type="Anduril")
 	)
 
 	//--- BOX PLOTS TOP UP- AND DOWN-REGULATED GENES ----------------------------------------------------------------------//
@@ -362,10 +436,10 @@ for ID, comparison : comparisons
 		geneAnnot=geneAnnot,
 		direction="up",
 		comparison=comparison,
-		labelOutliers=false,
+		labelOutliers=true,
 		cexGroupLabel = 0.6,
 		sectionType="subsubsection",
-		@name = "degBoxplotUp_"+ID
+		@name = "degBoxplotUp_" + std.quote(ID, type="Anduril")
 	)
 
 	degBoxplotDn = getDEGBoxPlots
@@ -376,11 +450,11 @@ for ID, comparison : comparisons
 		geneAnnot=geneAnnot,
 		direction="down",
 		comparison=comparison,
-		labelOutliers=false,
+		labelOutliers=true,
 		cexGroupLabel = 0.6,
 		height = 8,
 		sectionType="subsubsection",
-		@name = "degBoxplotDn_"+ID
+		@name = "degBoxplotDn_" + std.quote(ID, type="Anduril")
 	)
 
 	//--- EXPRESSION HEATMAP --------------------------------------------------------------------------//
@@ -389,10 +463,10 @@ for ID, comparison : comparisons
 	(
 		csv            = deseqExprMatrix.expr,
 		auxiliary      = degCalledLst[ID] @require,
-		includeColumns = comparison.sampleIdLst,
-		includeColumns = "RowName",
+		//includeColumns = comparison.sampleIdLst,    // uncomment to see only samples of the two compared groups
+		//includeColumns = "RowName",                 // uncomment to see only samples of the two compared groups
 		colOrder       = true,
-		@name          = "exprMatrix_"+ID
+		@name          = "exprMatrix_" + std.quote(ID, type="Anduril")
 	)                      
 
 	exprHeatmap = getHeatmapReport
@@ -402,6 +476,7 @@ for ID, comparison : comparisons
 		group       = comparison,
 		sectionType = "subsubsection",
 		cexRow      = 0.5,
+		cexCol      = 0.6,
 		@name       = "heatmap" + ID,
 		@enabled    = runHeatmap
 	)
@@ -418,7 +493,8 @@ for ID, comparison : comparisons
 		ID           = ID,
 		sectionTitle = "GO terms enriched in DEGs between " + comparison.caseG + " and " + comparison.controlG,
 		sectionType  = "subsubsection",
-		@name        = "goEnrichment"+ID
+		@name        = "goEnrichment" + std.quote(ID, type="Anduril"),
+		@enabled     = runGO
 	)
 
 	//--- GENE INTERACTION NETWORK --------------------------------------------------------------------//
@@ -447,7 +523,7 @@ for ID, comparison : comparisons
 			FROM   table2 T2 LEFT JOIN table1 T1 ON T2."ids" = T1."ids" 
 			WHERE  T1."ids" IS NULL AND T2."meanExpr'''+ID+'''" < 10
             ''',
-		@name    = "statusTable_"+ID,
+		@name    = "statusTable_" + std.quote(ID, type="Anduril"),
 		@enabled = runNetwork
 	)
 	
@@ -492,7 +568,7 @@ for ID, comparison : comparisons
 		expand            = "connected",
 		statusFilter      = "NA",
 		sectionType       = "subsubsection",
-		@name             = "network_"+ID,
+		@name             = "network_" + std.quote(ID, type="Anduril"),
 		@enabled          = runNetwork
 	)
 	
@@ -510,8 +586,8 @@ for ID, comparison : comparisons
 			goEnrichment,
 			network.report
 		},
-		sectionTitle=ID, 
-		sectionType="subsection"
+		sectionTitle = std.quote(ID, type="Latex"), 
+		sectionType = "subsection"
 	)
 }
 
@@ -530,7 +606,8 @@ venn = VennDiagram
 	sets1        = "DTCvsMNC,TUMvsDTC,TUMvsMNC",
 	sectionTitle = "Gene set comparisons",
 	sectionType  = "subsection",
-	types        = "circles"
+	types        = "circles",
+	@enabled     = runVenn
 )
 
 degReportLst["venn"] = venn.report
@@ -543,70 +620,92 @@ include "/mnt/projects/helena_veronika/scripts/anduril/venn.and"
 
 vennSetsExpanded = ExpandCollapse(relation=venn.sets)
 
-// --- intersection DTCvsMNC and TUMvsDTC
+// --- DTC_MNC and NOT TUM_MNC
 
-vennSetTableReport_DTCvsMNC_AND_TUMvsDTC = VennSetTableReport
+vennSetTableReport_DTC_MNC_AND_NOT_TUM_MNC = VennSetTableReport
 (
 	vennSetData        = vennSetsExpanded,
-	vennSetNames       = {"DTCvsMNC_AND_TUMvsDTC_AND_TUMvsMNC", "DTCvsMNC_AND_TUMvsDTC_AND_NOT_TUMvsMNC"},
-	outputComparisons  = {"DTCvsMNC", "TUMvsDTC"},
-	degs               = degCalledLst,
+	vennSetNames       = {"DTC_MNC_AND_DTC_TUM_AND_NOT_TUM_MNC", "DTC_MNC_AND_NOT_DTC_TUM_AND_NOT_TUM_MNC"},
+	outputComparisons  = {"DTC_MNC", "TUM_MNC"},
+	degs               = degAllLst,
 	geneAnnot          = geneAnnot,
-	section            = "Intersection DTCvsMNC and TUMvsDTC",
+	orderBy            = "DTC_MNC",
+	section            = "Intersection DTC_MNC and NOT TUM_MNC",
 	sectionType        = "subsubsection",
-	caption            = "These genes were found to be significantly differentially expressed in both " + comparisons["DTCvsMNC"].desc + " (set 'A') and " + comparisons["TUMvsDTC"].desc + " (set 'B'). " +
-	                     "Genes sorted by average q-value from most to least significant."
+	caption            = "These genes were found to be significantly differentially expressed comparing " + comparisons["DTC_MNC"].desc + " (set 'A') but NOT comparing " + comparisons["TUM_MNC"].desc + " (set 'B'). " +
+	                     "Thus, these genes have potential DTC-specific functions. Genes sorted by column 'FC(A)' from most to least significant.",
+	@enabled           = runVenn
 )
-degReportLst["vennSetTableReport_DTCvsMNC_AND_TUMvsDTC"] = vennSetTableReport_DTCvsMNC_AND_TUMvsDTC.report
+degReportLst["vennSetTableReport_DTC_MNC_AND_NOT_TUM_MNC"] = vennSetTableReport_DTC_MNC_AND_NOT_TUM_MNC.report
 
-// --- intersection DTCvsMNC and TUMvsMNC
+// --- intersection DTC_MNC and DTC_TUM
 
-vennSetTableReport_DTCvsMNC_AND_TUMvsMNC = VennSetTableReport
+vennSetTableReport_DTC_MNC_AND_DTC_TUM = VennSetTableReport
 (
 	vennSetData        = vennSetsExpanded,
-	vennSetNames       = {"DTCvsMNC_AND_TUMvsDTC_AND_TUMvsMNC", "DTCvsMNC_AND_NOT_TUMvsDTC_AND_TUMvsMNC"},
-	outputComparisons  = {"DTCvsMNC", "TUMvsMNC"},
-	degs               = degCalledLst,
+	vennSetNames       = {"DTC_MNC_AND_DTC_TUM_AND_TUM_MNC", "DTC_MNC_AND_DTC_TUM_AND_NOT_TUM_MNC"},
+	outputComparisons  = {"DTC_MNC", "DTC_TUM"},
+	degs               = degAllLst,
 	geneAnnot          = geneAnnot,
-	section            = "Intersection DTCvsMNC and TUMvsMNC",
+	section            = "Intersection DTC_MNC and DTC_TUM",
 	sectionType        = "subsubsection",
-	caption            = "These genes were found to be significantly differentially expressed in both " + comparisons["DTCvsMNC"].desc + " (set 'A') and " + comparisons["TUMvsMNC"].desc + " (set 'B'). " +
-	                     "Genes sorted by average q-value from most to least significant."
+	caption            = "These genes were found to be significantly differentially expressed in both " + comparisons["DTC_MNC"].desc + " (set 'A') and " + comparisons["DTC_TUM"].desc + " (set 'B'). " +
+	                     "Genes sorted by average FC from largest to smallest.",
+	@enabled           = runVenn
 )
-degReportLst["vennSetTableReport_DTCvsMNC_AND_TUMvsMNC"] = vennSetTableReport_DTCvsMNC_AND_TUMvsMNC.report
+degReportLst["vennSetTableReport_DTC_MNC_AND_DTC_TUM"] = vennSetTableReport_DTC_MNC_AND_DTC_TUM.report
 
-// --- intersection TUMvsDTC and TUMvsMNC
+// --- intersection DTC_MNC and TUM_MNC
 
-vennSetTableReport_TUMvsDTC_AND_TUMvsMNC = VennSetTableReport
+vennSetTableReport_DTC_MNC_AND_TUM_MNC = VennSetTableReport
 (
 	vennSetData        = vennSetsExpanded,
-	vennSetNames       = {"DTCvsMNC_AND_TUMvsDTC_AND_TUMvsMNC", "NOT_DTCvsMNC_AND_TUMvsDTC_AND_TUMvsMNC"},
-	outputComparisons  = {"TUMvsDTC", "TUMvsMNC"},
-	degs               = degCalledLst,
+	vennSetNames       = {"DTC_MNC_AND_DTC_TUM_AND_TUM_MNC", "DTC_MNC_AND_NOT_DTC_TUM_AND_TUM_MNC"},
+	outputComparisons  = {"DTC_MNC", "TUM_MNC"},
+	degs               = degAllLst,
 	geneAnnot          = geneAnnot,
-	section            = "Intersection TUMvsDTC and TUMvsMNC",
+	section            = "Intersection DTC_MNC and TUM_MNC",
 	sectionType        = "subsubsection",
-	caption            = "These genes were found to be significantly differentially expressed in both " + comparisons["TUMvsDTC"].desc + " (set 'A') and " + comparisons["TUMvsMNC"].desc + " (set 'B'). " +
-	                     "Genes sorted by average q-value from most to least significant."
+	caption            = "These genes were found to be significantly differentially expressed in both " + comparisons["DTC_MNC"].desc + " (set 'A') and " + comparisons["TUM_MNC"].desc + " (set 'B'). " +
+	                     "Genes sorted by average FC from largest to smallest.",
+	@enabled           = runVenn
 )
-degReportLst["vennSetTableReport_TUMvsDTC_AND_TUMvsMNC"] = vennSetTableReport_TUMvsDTC_AND_TUMvsMNC.report
+degReportLst["vennSetTableReport_DTC_MNC_AND_TUM_MNC"] = vennSetTableReport_DTC_MNC_AND_TUM_MNC.report
 
-// --- intersection DTCvsMNC, TUMvsDTC and TUMvsMNC
+// --- intersection DTC_TUM and TUM_MNC
 
-vennSetTableReport_DTCvsMNC_AND_TUMvsDTC_AND_TUMvsMNC = VennSetTableReport
+vennSetTableReport_DTC_TUM_AND_TUM_MNC = VennSetTableReport
 (
 	vennSetData        = vennSetsExpanded,
-	vennSetNames       = {"DTCvsMNC_AND_TUMvsDTC_AND_TUMvsMNC"},
-	outputComparisons  = {"DTCvsMNC", "TUMvsDTC", "TUMvsMNC"},
-	degs               = degCalledLst,
+	vennSetNames       = {"DTC_MNC_AND_DTC_TUM_AND_TUM_MNC", "NOT_DTC_MNC_AND_DTC_TUM_AND_TUM_MNC"},
+	outputComparisons  = {"DTC_TUM", "TUM_MNC"},
+	degs               = degAllLst,
 	geneAnnot          = geneAnnot,
-	section            = "Intersection DTCvsMNC, TUMvsDTC and TUMvsMNC",
+	section            = "Intersection DTC_TUM and TUM_MNC",
 	sectionType        = "subsubsection",
-	caption            = "These genes were found to be significantly differentially expressed in all three comparisons, including " + comparisons["DTCvsMNC"].desc + " (set 'A'), " + 
-	                     comparisons["TUMvsDTC"].desc + " (set 'B'), and " + comparisons["TUMvsMNC"].desc + " (set 'C'). " +
-	                     "Genes sorted by average q-value from most to least significant."
+	caption            = "These genes were found to be significantly differentially expressed in both " + comparisons["DTC_TUM"].desc + " (set 'A') and " + comparisons["TUM_MNC"].desc + " (set 'B'). " +
+	                     "Genes sorted by average FC from largest to smallest.",
+	@enabled           = runVenn
 )
-degReportLst["vennSetTableReport_DTCvsMNC_AND_TUMvsDTC_AND_TUMvsMNC"] = vennSetTableReport_DTCvsMNC_AND_TUMvsDTC_AND_TUMvsMNC.report
+degReportLst["vennSetTableReport_DTC_TUM_AND_TUM_MNC"] = vennSetTableReport_DTC_TUM_AND_TUM_MNC.report
+
+// --- intersection DTC_MNC, DTC_TUM and TUM_MNC
+
+vennSetTableReport_DTC_MNC_AND_DTC_TUM_AND_TUM_MNC = VennSetTableReport
+(
+	vennSetData        = vennSetsExpanded,
+	vennSetNames       = {"DTC_MNC_AND_DTC_TUM_AND_TUM_MNC"},
+	outputComparisons  = {"DTC_MNC", "DTC_TUM", "TUM_MNC"},
+	degs               = degAllLst,
+	geneAnnot          = geneAnnot,
+	section            = "Intersection DTC_MNC, DTC_TUM and TUM_MNC",
+	sectionType        = "subsubsection",
+	caption            = "These genes were found to be significantly differentially expressed in all three comparisons, including " + comparisons["DTC_MNC"].desc + " (set 'A'), " + 
+	                     comparisons["DTC_TUM"].desc + " (set 'B'), and " + comparisons["TUM_MNC"].desc + " (set 'C'). " +
+	                     "Genes sorted by average FC from largest to smallest.",
+	@enabled           = runVenn
+)
+degReportLst["vennSetTableReport_DTC_MNC_AND_DTC_TUM_AND_TUM_MNC"] = vennSetTableReport_DTC_MNC_AND_DTC_TUM_AND_TUM_MNC.report
 
 //------------------------------------------------------------------------------------------------
 //--- EXPRESSION BOX PLOTS OF SELECTED GENES
@@ -616,13 +715,13 @@ boxplotCustom = ExpressionBoxPlot
 (
 	expr   = deseqExprMatrix.expr,
 	force sampleGroups = sampleGroups,
-	includeGroups="TUM,DTCdia,DTCrel,MNC",
+	includeGroups="TUM,DTCdx,DTCrel,MNC",
 	annotation = geneAnnot,
 	hgnc = "MT-TF,MT-RNR1,MT-TV,MT-RNR2,MT-TL1,MT-ND1,MT-TI,MT-TQ,MT-TM,MT-ND2,MT-TW,MT-TA,MT-TN,MT-TC,MT-TY,MT-CO1,MT-TS1,MT-TD,MT-CO2,MT-TK,MT-ATP8,MT-ATP6,MT-CO3,MT-TG,MT-ND3,MT-TR,MT-ND4L,MT-ND4,MT-TH,MT-TS2,MT-TL2,MT-ND5,MT-ND6,MT-TE,MT-CYB,MT-TT,MT-TP",
 	nRow = 6,
 	nCol = 7,
 	height = 10,
-	labelOutliers=false,
+	labelOutliers=true,
 	cexSampleLabel=0.3,
 	cexGroupLabel=0.7,
 	caption = 'Expression values of mitochondria encoded genes.',
@@ -650,11 +749,12 @@ for comparison : std.itercsv(inputComparisons) {
 	pgeReportLst[comparison.ID] = PGEReport
 	(
 		query=degCalledLst[comparison.ID], 
-		reference=gtf, 
+		reference=gtfNorRNA.optOut1, 
 		title=comparison.ID,
 		pvalue=0.01,
 		includeHeader=std.length(pgeReportLst)==0,
-		@name="pge_"+comparison.ID
+		@name="pge_" + std.quote(comparison.ID, type="Anduril"),
+		@enabled = runPGE
 	)
 }
 	
@@ -663,7 +763,8 @@ pgeReport = LatexCombiner
 	array=pgeReportLst, 
 	pagebreak=true, 
 	sectionTitle="Positional gene enrichment (PGE) of differentially expressed genes", 
-	sectionType="section"
+	sectionType="section",
+	@enabled = runPGE
 )
  
 //------------------------------------------------------------------------------------------------
@@ -741,7 +842,7 @@ for ID, comparison : comparisons
 		annotation = geneNames,
 		colP = "p" + ID,
 		colFC= "fc" + ID,
-		@name = "rnk_" + ID,
+		@name = "rnk_" + std.quote(ID, type="Anduril"),
 		@enabled = runGSEA
 	)
 }
@@ -781,7 +882,7 @@ for ID, comparison : comparisons
 		options = "-nperm " + permutations + " -set_max " + maxSetSize[category] + " -set_min " + minSetSize[category],
 		@memory  = 7000,
 		@cpu     = 2, 			
-		@name = "gseaMSigDB_" + ID,
+		@name = "gseaMSigDB_" + std.quote(ID, type="Anduril"),
 		@enabled = runGSEA
 	)
 	enrichedUp[category][ID] = gseaMSigDB.enrichedUp
@@ -807,7 +908,7 @@ for ID, comparison : comparisons
 		options = "-nperm " + permutations + " -set_max " + maxSetSize[category] + " -set_min " + minSetSize[category],
 		@memory  = 7000,
 		@cpu     = 2, 			
-		@name = "gseaGeneSigDB_" + ID,
+		@name = "gseaGeneSigDB_" + std.quote(ID, type="Anduril"),
 		@enabled = runGSEA
 	)
 	enrichedUp[category][ID] = gseaGeneSigDB.enrichedUp
@@ -833,7 +934,7 @@ for ID, comparison : comparisons
 		options = "-nperm " + permutations + " -set_max " + maxSetSize[category] + " -set_min " + minSetSize[category],
 		@memory  = 7000,
 		@cpu     = 2, 			
-		@name = "gseaDSigDB_" + ID,
+		@name = "gseaDSigDB_" + std.quote(ID, type="Anduril"),
 		@enabled = runGSEA
 	)
 	enrichedUp[category][ID] = gseaDSigDB.enrichedUp
@@ -862,7 +963,7 @@ for ID, comparison : comparisons
 		options = "-nperm " + permutations + " -set_max " + maxSetSize[category] + " -set_min " + minSetSize[category],
 		@memory  = 7000,
 		@cpu     = 2, 			
-		@name = "gseaTFTargets_" + ID,
+		@name = "gseaTFTargets_" + std.quote(ID, type="Anduril"),
 		@enabled = runGSEA
 	)
 	enrichedUp[category][ID] = gseaTFTargets.enrichedUp
@@ -909,31 +1010,4 @@ combinedPDFGsea = LatexPDF
 
 @out.out.filename = shortName + "-GSEA.pdf"
 OUTPUT(combinedPDFGsea.document)
-
-//------------------------------------------------------------------------------------------------
-//--- MUTATION REPORT
-//------------------------------------------------------------------------------------------------
-
-include "/mnt/projects/generic/scripts/anduril/mutations.and"
-
-mutationReport = MutationReport
-(
-	alignedBams  = alignedBams,
-	sectionTitle = "Mutated genes",
-	sectionType  = "section",
-	@enabled     = runMutations
-)
-
-mutationPDF = LatexPDF
-(
-	document = mutationReport,
-	header   = latexHeaderMutation,
-	footer   = docTemplate.footer,
-	useRefs  = true,
-	verbose  = false,
-	@enabled = runMutations
-)
-
-@out.out.filename = shortName + "-mutations.pdf"
-OUTPUT(mutationPDF.document)
 
