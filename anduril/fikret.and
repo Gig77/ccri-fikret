@@ -10,7 +10,7 @@ runMutations = false
 runHeatmap   = true
 runGSEA      = false
 runNetwork   = true
-runVenn      = false
+runVenn      = true
 runPGE       = true
 runGO        = true
 
@@ -164,7 +164,8 @@ experimentReport = experimentalSetupReport
 	sampleGroups       = sampleGroups,
 	comparisons        = inputComparisons,
 	sampleTableColumns = "Sample,Alias,TP,Material,P ID,Rel,Dead,MNA,ATRX,2p gain,4p loss,6q loss,7q gain,11q del,17q gain",
-	sampleTableFormat  = "ccccccccccccccc"
+	sampleTableFormat  = "ccccccccccccccc",
+	fontsize           = "tiny"
 )
 
 //------------------------------------------------------------------------------------------------
@@ -241,11 +242,15 @@ qcReport  = getQCReport
     force inputSamples     = inputSamples,
     readStatsYMax          = 50,
     readStatsSamplesPerRow = 13,
-    cexClusterHeatmap      = 0.25,
+    cexClusterHeatmap      = 0.35,
     cexMDS                 = 0.4,
     cexGeneBodyCoverage    = 0.3,
     gcBiasYMax             = 4,
-    gcBiasYMin             = -3
+    gcBiasYMin             = -3,
+    sampleAnnotationColumns = "Material,MNA",
+    clusterHeatmapLegendXOffset = 0.04,
+    clusterHeatmapMargins   = "5,5.5",
+    boxplotCexAxis          = 0.6
 )
 
 //------------------------------------------------------------------------------------------------
@@ -313,6 +318,7 @@ for ID, comparison : comparisons
 	    colSuffix               = ID,
 	    minReplicatesForReplace = 5,
 	    cooksCutoff             = 0.7,
+	    trim                    = 0.4,
 	    @name                   = "deseq_" + std.quote(ID, type="Anduril")
 	)
 	degAllLst[ID] = deseq.results
@@ -459,26 +465,16 @@ for ID, comparison : comparisons
 
 	//--- EXPRESSION HEATMAP --------------------------------------------------------------------------//
 
-	exprMatrixFiltered = CSVFilter
-	(
-		csv            = deseqExprMatrix.expr,
-		auxiliary      = degCalledLst[ID] @require,
-		//includeColumns = comparison.sampleIdLst,    // uncomment to see only samples of the two compared groups
-		//includeColumns = "RowName",                 // uncomment to see only samples of the two compared groups
-		colOrder       = true,
-		@name          = "exprMatrix_" + std.quote(ID, type="Anduril")
-	)                      
-
 	exprHeatmap = getHeatmapReport
 	(
-		exprMatrix  = exprMatrixFiltered,
-		geneNames   = geneNames,
-		group       = comparison,
-		sectionType = "subsubsection",
-		cexRow      = 0.5,
-		cexCol      = 0.6,
-		@name       = "heatmap" + ID,
-		@enabled    = runHeatmap
+		exprMatrix   = deseqExprMatrix.expr,
+		degCalled    = degCalledLst[ID],
+		geneNames    = geneNames,
+		sampleGroups = sampleGroups,
+		comparison   = comparison,
+		sectionType  = "subsubsection",
+		@name        = "heatmap" + std.quote(ID, type="Anduril"),
+		@enabled     = runHeatmap
 	)
 
 	//--- GO ENRICHMENT -------------------------------------------------------------------------------//
@@ -603,7 +599,7 @@ venn = VennDiagram
 	cexSetName   = 0.3,
 	cexSetSize   = 0.3,
 	doWeights    = true,
-	sets1        = "DTCvsMNC,TUMvsDTC,TUMvsMNC",
+	sets1        = "DTC_vs_MNC,DTC_vs_TUM,TUM_vs_MNC",
 	sectionTitle = "Gene set comparisons",
 	sectionType  = "subsection",
 	types        = "circles",
@@ -620,92 +616,92 @@ include "/mnt/projects/fikret/anduril/includes/venn.and"
 
 vennSetsExpanded = ExpandCollapse(relation=venn.sets)
 
-// --- DTC_MNC and NOT TUM_MNC
+// --- DTC_vs_MNC and NOT TUM_vs_MNC
 
-vennSetTableReport_DTC_MNC_AND_NOT_TUM_MNC = VennSetTableReport
+vennSetTableReport_DTC_vs_MNC_AND_NOT_TUM_vs_MNC = VennSetTableReport
 (
 	vennSetData        = vennSetsExpanded,
-	vennSetNames       = {"DTC_MNC_AND_DTC_TUM_AND_NOT_TUM_MNC", "DTC_MNC_AND_NOT_DTC_TUM_AND_NOT_TUM_MNC"},
-	outputComparisons  = {"DTC_MNC", "TUM_MNC"},
+	vennSetNames       = {"DTC_vs_MNC_AND_DTC_vs_TUM_AND_NOT_TUM_vs_MNC", "DTC_vs_MNC_AND_NOT_DTC_vs_TUM_AND_NOT_TUM_vs_MNC"},
+	outputComparisons  = {"DTC_vs_MNC", "TUM_vs_MNC"},
 	degs               = degAllLst,
 	geneAnnot          = geneAnnot,
-	orderBy            = "DTC_MNC",
-	section            = "Intersection DTC_MNC and NOT TUM_MNC",
+	orderBy            = "DTC_vs_MNC",
+	section            = "Intersection DTC vs. MNC and NOT TUM vs. MNC",
 	sectionType        = "subsubsection",
-	caption            = "These genes were found to be significantly differentially expressed comparing " + comparisons["DTC_MNC"].desc + " (set 'A') but NOT comparing " + comparisons["TUM_MNC"].desc + " (set 'B'). " +
+	caption            = "These genes were found to be significantly differentially expressed comparing " + comparisons["DTC_vs_MNC"].desc + " (set 'A') but NOT comparing " + comparisons["TUM_vs_MNC"].desc + " (set 'B'). " +
 	                     "Thus, these genes have potential DTC-specific functions. Genes sorted by column 'FC(A)' from most to least significant.",
 	@enabled           = runVenn
 )
-degReportLst["vennSetTableReport_DTC_MNC_AND_NOT_TUM_MNC"] = vennSetTableReport_DTC_MNC_AND_NOT_TUM_MNC.report
+degReportLst["vennSetTableReport_DTC_vs_MNC_AND_NOT_TUM_vs_MNC"] = vennSetTableReport_DTC_vs_MNC_AND_NOT_TUM_vs_MNC.report
 
-// --- intersection DTC_MNC and DTC_TUM
+// --- intersection DTC_vs_MNC and DTC_vs_TUM
 
-vennSetTableReport_DTC_MNC_AND_DTC_TUM = VennSetTableReport
+vennSetTableReport_DTC_vs_MNC_AND_DTC_vs_TUM = VennSetTableReport
 (
 	vennSetData        = vennSetsExpanded,
-	vennSetNames       = {"DTC_MNC_AND_DTC_TUM_AND_TUM_MNC", "DTC_MNC_AND_DTC_TUM_AND_NOT_TUM_MNC"},
-	outputComparisons  = {"DTC_MNC", "DTC_TUM"},
+	vennSetNames       = {"DTC_vs_MNC_AND_DTC_vs_TUM_AND_TUM_vs_MNC", "DTC_vs_MNC_AND_DTC_vs_TUM_AND_NOT_TUM_vs_MNC"},
+	outputComparisons  = {"DTC_vs_MNC", "DTC_vs_TUM"},
 	degs               = degAllLst,
 	geneAnnot          = geneAnnot,
-	section            = "Intersection DTC_MNC and DTC_TUM",
+	section            = "Intersection DTC vs. MNC and DTC vs. TUM",
 	sectionType        = "subsubsection",
-	caption            = "These genes were found to be significantly differentially expressed in both " + comparisons["DTC_MNC"].desc + " (set 'A') and " + comparisons["DTC_TUM"].desc + " (set 'B'). " +
+	caption            = "These genes were found to be significantly differentially expressed in both " + comparisons["DTC_vs_MNC"].desc + " (set 'A') and " + comparisons["DTC_vs_TUM"].desc + " (set 'B'). " +
 	                     "Genes sorted by average FC from largest to smallest.",
 	@enabled           = runVenn
 )
-degReportLst["vennSetTableReport_DTC_MNC_AND_DTC_TUM"] = vennSetTableReport_DTC_MNC_AND_DTC_TUM.report
+degReportLst["vennSetTableReport_DTC_vs_MNC_AND_DTC_vs_TUM"] = vennSetTableReport_DTC_vs_MNC_AND_DTC_vs_TUM.report
 
-// --- intersection DTC_MNC and TUM_MNC
+// --- intersection DTC_vs_MNC and TUM_vs_MNC
 
-vennSetTableReport_DTC_MNC_AND_TUM_MNC = VennSetTableReport
+vennSetTableReport_DTC_vs_MNC_AND_TUM_vs_MNC = VennSetTableReport
 (
 	vennSetData        = vennSetsExpanded,
-	vennSetNames       = {"DTC_MNC_AND_DTC_TUM_AND_TUM_MNC", "DTC_MNC_AND_NOT_DTC_TUM_AND_TUM_MNC"},
-	outputComparisons  = {"DTC_MNC", "TUM_MNC"},
+	vennSetNames       = {"DTC_vs_MNC_AND_DTC_vs_TUM_AND_TUM_vs_MNC", "DTC_vs_MNC_AND_NOT_DTC_vs_TUM_AND_TUM_vs_MNC"},
+	outputComparisons  = {"DTC_vs_MNC", "TUM_vs_MNC"},
 	degs               = degAllLst,
 	geneAnnot          = geneAnnot,
-	section            = "Intersection DTC_MNC and TUM_MNC",
+	section            = "Intersection DTC. vs. MNC and TUM vs. MNC",
 	sectionType        = "subsubsection",
-	caption            = "These genes were found to be significantly differentially expressed in both " + comparisons["DTC_MNC"].desc + " (set 'A') and " + comparisons["TUM_MNC"].desc + " (set 'B'). " +
+	caption            = "These genes were found to be significantly differentially expressed in both " + comparisons["DTC_vs_MNC"].desc + " (set 'A') and " + comparisons["TUM_vs_MNC"].desc + " (set 'B'). " +
 	                     "Genes sorted by average FC from largest to smallest.",
 	@enabled           = runVenn
 )
-degReportLst["vennSetTableReport_DTC_MNC_AND_TUM_MNC"] = vennSetTableReport_DTC_MNC_AND_TUM_MNC.report
+degReportLst["vennSetTableReport_DTC_vs_MNC_AND_TUM_vs_MNC"] = vennSetTableReport_DTC_vs_MNC_AND_TUM_vs_MNC.report
 
-// --- intersection DTC_TUM and TUM_MNC
+// --- intersection DTC_vs_TUM and TUM_vs_MNC
 
-vennSetTableReport_DTC_TUM_AND_TUM_MNC = VennSetTableReport
+vennSetTableReport_DTC_vs_TUM_AND_TUM_vs_MNC = VennSetTableReport
 (
 	vennSetData        = vennSetsExpanded,
-	vennSetNames       = {"DTC_MNC_AND_DTC_TUM_AND_TUM_MNC", "NOT_DTC_MNC_AND_DTC_TUM_AND_TUM_MNC"},
-	outputComparisons  = {"DTC_TUM", "TUM_MNC"},
+	vennSetNames       = {"DTC_vs_MNC_AND_DTC_vs_TUM_AND_TUM_vs_MNC", "NOT_DTC_vs_MNC_AND_DTC_vs_TUM_AND_TUM_vs_MNC"},
+	outputComparisons  = {"DTC_vs_TUM", "TUM_vs_MNC"},
 	degs               = degAllLst,
 	geneAnnot          = geneAnnot,
-	section            = "Intersection DTC_TUM and TUM_MNC",
+	section            = "Intersection DTC vs. TUM and TUM vs. MNC",
 	sectionType        = "subsubsection",
-	caption            = "These genes were found to be significantly differentially expressed in both " + comparisons["DTC_TUM"].desc + " (set 'A') and " + comparisons["TUM_MNC"].desc + " (set 'B'). " +
+	caption            = "These genes were found to be significantly differentially expressed in both " + comparisons["DTC_vs_TUM"].desc + " (set 'A') and " + comparisons["TUM_vs_MNC"].desc + " (set 'B'). " +
 	                     "Genes sorted by average FC from largest to smallest.",
 	@enabled           = runVenn
 )
-degReportLst["vennSetTableReport_DTC_TUM_AND_TUM_MNC"] = vennSetTableReport_DTC_TUM_AND_TUM_MNC.report
+degReportLst["vennSetTableReport_DTC_vs_TUM_AND_TUM_vs_MNC"] = vennSetTableReport_DTC_vs_TUM_AND_TUM_vs_MNC.report
 
-// --- intersection DTC_MNC, DTC_TUM and TUM_MNC
+// --- intersection DTC_vs_MNC, DTC_vs_TUM and TUM_vs_MNC
 
-vennSetTableReport_DTC_MNC_AND_DTC_TUM_AND_TUM_MNC = VennSetTableReport
+vennSetTableReport_DTC_vs_MNC_AND_DTC_vs_TUM_AND_TUM_vs_MNC = VennSetTableReport
 (
 	vennSetData        = vennSetsExpanded,
-	vennSetNames       = {"DTC_MNC_AND_DTC_TUM_AND_TUM_MNC"},
-	outputComparisons  = {"DTC_MNC", "DTC_TUM", "TUM_MNC"},
+	vennSetNames       = {"DTC_vs_MNC_AND_DTC_vs_TUM_AND_TUM_vs_MNC"},
+	outputComparisons  = {"DTC_vs_MNC", "DTC_vs_TUM", "TUM_vs_MNC"},
 	degs               = degAllLst,
 	geneAnnot          = geneAnnot,
-	section            = "Intersection DTC_MNC, DTC_TUM and TUM_MNC",
+	section            = "Intersection DTC vs. MNC, DTC vs. TUM and TUM vs. MNC",
 	sectionType        = "subsubsection",
-	caption            = "These genes were found to be significantly differentially expressed in all three comparisons, including " + comparisons["DTC_MNC"].desc + " (set 'A'), " + 
-	                     comparisons["DTC_TUM"].desc + " (set 'B'), and " + comparisons["TUM_MNC"].desc + " (set 'C'). " +
+	caption            = "These genes were found to be significantly differentially expressed in all three comparisons, including " + comparisons["DTC_vs_MNC"].desc + " (set 'A'), " + 
+	                     comparisons["DTC_vs_TUM"].desc + " (set 'B'), and " + comparisons["TUM_vs_MNC"].desc + " (set 'C'). " +
 	                     "Genes sorted by average FC from largest to smallest.",
 	@enabled           = runVenn
 )
-degReportLst["vennSetTableReport_DTC_MNC_AND_DTC_TUM_AND_TUM_MNC"] = vennSetTableReport_DTC_MNC_AND_DTC_TUM_AND_TUM_MNC.report
+degReportLst["vennSetTableReport_DTC_vs_MNC_AND_DTC_vs_TUM_AND_TUM_vs_MNC"] = vennSetTableReport_DTC_vs_MNC_AND_DTC_vs_TUM_AND_TUM_vs_MNC.report
 
 //------------------------------------------------------------------------------------------------
 //--- EXPRESSION BOX PLOTS OF SELECTED GENES
