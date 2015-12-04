@@ -8,7 +8,7 @@ authors = "Christian Frech and Marko Laakso"
 
 runMutations = false
 runHeatmap   = true
-runGSEA      = false
+runGSEA      = true
 runNetwork   = true
 runVenn      = true
 runPGE       = true
@@ -146,7 +146,8 @@ for comparison : std.itercsv(inputComparisons)
 		'pLimit'      = comparison.pLimit,
 		'qLimit'      = comparison.qLimit,
 		'exprLimit'   = comparison.exprLimit,
-		'desc'        = comparison.Description
+		'desc'        = comparison.Description,
+		'gsea'        = comparison.GSEA
 	}
 }
 
@@ -247,8 +248,9 @@ qcReport  = getQCReport
     cexGeneBodyCoverage    = 0.3,
     gcBiasYMax             = 4,
     gcBiasYMin             = -3,
-    sampleAnnotationColumns = "Material,MNA",
+    sampleAnnotationColumns = "Material,MNA,ATRX,2p gain,4p loss,6q loss,7q gain,11q del,17q gain",
     clusterHeatmapLegendXOffset = 0.04,
+    clusterHeatmapLegendYOffset = 0.1,
     clusterHeatmapMargins   = "5,5.5",
     boxplotCexAxis          = 0.6
 )
@@ -473,6 +475,7 @@ for ID, comparison : comparisons
 		sampleGroups = sampleGroups,
 		comparison   = comparison,
 		sectionType  = "subsubsection",
+		fontSizeRow  = 3,
 		@name        = "heatmap" + std.quote(ID, type="Anduril"),
 		@enabled     = runHeatmap
 	)
@@ -740,20 +743,20 @@ boxplotSelectedGenes = LatexCombiner
 include "/mnt/projects/fikret/anduril/includes/pgeReport.and"
 
 pgeReportLst = record()
-for comparison : std.itercsv(inputComparisons) {
-	
-	pgeReportLst[comparison.ID] = PGEReport
+for ID, comparison : comparisons 
+{ 
+	pgeReportLst[ID] = PGEReport
 	(
-		query=degCalledLst[comparison.ID], 
+		query=degCalledLst[ID], 
 		reference=gtfNorRNA.optOut1, 
-		title=comparison.ID,
+		title=ID,
 		pvalue=0.01,
 		includeHeader=std.length(pgeReportLst)==0,
-		@name="pge_" + std.quote(comparison.ID, type="Anduril"),
+		@name="pge_" + std.quote(ID, type="Anduril"),
 		@enabled = runPGE
 	)
 }
-	
+
 pgeReport = LatexCombiner
 (
 	array=pgeReportLst, 
@@ -827,10 +830,20 @@ OUTPUT(degExcel.allGenes)
 //------------------------------------------------------------------------------------------------
 include "/mnt/projects/fikret/anduril/includes/gsea.and"
 
+// filter comparisons for which GSEA is requested
+
+comparisonsGSEA = record()
+for ID, comparison : comparisons 
+{
+	if (comparison.gsea == "yes") {
+		comparisonsGSEA[ID] = comparison
+	}
+}
+
 // produce RNK files for each comparison
 
 rnks = record()
-for ID, comparison : comparisons 
+for ID, comparison : comparisonsGSEA 
 {	
 	rnks[ID] = DEG2Rnk
 	(
@@ -859,7 +872,7 @@ enrichedDn[category] = record()
 minSetSize[category] = 5
 maxSetSize[category] = 1000
 
-for ID, comparison : comparisons 
+for ID, comparison : comparisonsGSEA 
 {	
 	gseaMSigDB = GSEA
 	(
@@ -893,7 +906,7 @@ enrichedDn[category] = record()
 minSetSize[category] = 5
 maxSetSize[category] = 1000
 
-for ID, comparison : comparisons 
+for ID, comparison : comparisonsGSEA 
 {	
 	gseaGeneSigDB = GSEA
 	(
@@ -919,7 +932,7 @@ enrichedDn[category] = record()
 minSetSize[category] = 3
 maxSetSize[category] = 1000
 
-for ID, comparison : comparisons 
+for ID, comparison : comparisonsGSEA 
 {	
 	gseaDSigDB = GSEA
 	(
@@ -945,7 +958,7 @@ enrichedDn[category] = record()
 minSetSize[category] = 3
 maxSetSize[category] = 5000
 
-for ID, comparison : comparisons 
+for ID, comparison : comparisonsGSEA 
 {	
 	gseaTFTargets = GSEA
 	(
@@ -974,15 +987,16 @@ gseaReport = GSEAReport
 	enrichedDn = enrichedDn,
 	minSetSizes = minSetSize,
 	maxSetSizes = maxSetSize,
-	tableReportComparisons = comparisons,
+	tableReportComparisons = comparisonsGSEA,
 	topNHeatmap = 80,
 	topNTable   = 100,
 	expression = degAllLst,
 	geneNames  = geneNames,
 	sigCutoff = 1e-2,
 	hsigCutoff = 1e-5,
-	overlapSigCutoff = 1e-2,
-	overlapHSigCutoff = 1e-5,
+	overlapSigCutoff = 1e-5,
+	overlapHSigCutoff = 1e-7,
+	runOverlapReport = true,
 	@enabled = runGSEA
 )
 
