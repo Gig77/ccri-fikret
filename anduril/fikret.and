@@ -13,6 +13,7 @@ runNetwork   = true
 runVenn      = true
 runPGE       = true
 runGO        = true
+runKegg      = true
 
 maxNA    	 = 0.90    // fraction of samples allowed to have NA values before gene is discarded
 pGOEnrich    = 0.01    // minimum p-value to call a GO term enriched 
@@ -496,6 +497,24 @@ for ID, comparison : comparisons
 		@enabled     = runGO
 	)
 
+	//--- KEGG PATHWAYS -------------------------------------------------------------------------------//
+
+	include "/mnt/projects/fikret/anduril/includes/keggReport.and"
+	kegg = keggReport
+	(
+		degsCalled   = degCalledLst[ID],
+		degsAll      = degAllLst[ID],
+		geneNames    = geneNames,
+		ID           = ID,
+		sectionTitle = "KEGG pathways enriched between " + comparison.caseG + " and " + comparison.controlG,
+		sectionType  = "subsubsection",
+		comparison   = comparison,
+		topNdiagrams = 10,
+		fdrCutoff    = 0.01,
+		@name        = "kegg" + std.quote(ID, type="Anduril"),
+		@enabled     = runKegg
+	)
+
 	//--- GENE INTERACTION NETWORK --------------------------------------------------------------------//
 	
 	statusTable = TableQuery
@@ -583,6 +602,7 @@ for ID, comparison : comparisons
 			degBoxplotDn, 
 			exprHeatmap, 
 			goEnrichment,
+			kegg,
 			network.report
 		},
 		sectionTitle = std.quote(ID, type="Latex"), 
