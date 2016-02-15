@@ -8,7 +8,7 @@ authors = "Christian Frech and Marko Laakso"
 
 runMutations = false
 runHeatmap   = true
-runGSEA      = true
+runGSEA      = false
 runNetwork   = true
 runVenn      = true
 runPGE       = true
@@ -34,6 +34,7 @@ enrichmentTable      = INPUT(path="/opt/moksiskaan/pipeline/exec/output/GOEnrich
 ensemblDb            = INPUT(path="/usr/local/share/anduril-bundles/moksiskaan/etc/ensemblHomoSapiens.properties")     // JDBC parameters for Ensembl~\cite{Flicek2008} database; comes with anduril-moksiskaan Docker image
 genesetAnnotation    = INPUT(path="/mnt/projects/generic/data/ccri/geneset_annotation.tsv")                            // assigns gene sets to categories for filtering
 latexHeaderMutation  = INPUT(path="/mnt/projects/fikret/scripts/anduril/latexHeaderMutation")
+mitoGeneNames        = INPUT(path="/mnt/projects/fikret/data/mito_genes.tsv")                                          // genes encoded on mitochondrial genome
 
 moksiskaanInit = MoksiskaanInit(showLog='EnsemblImport,PathwayCommonsImport,PINAImport,WikiPathways')
 ensemblRef = XrefLinkRule(moksiskaan = moksiskaanInit.connection, columns = "Ensembl=Ensembl", xrefTypes  = XrefType_Ensembl_gene)
@@ -208,7 +209,8 @@ for sample, bam : alignedBams
 		var1 = bam,
 		var2 = gtfNorRNA.optOut1,
 		script = "htseq-count -f bam -t exon -s no @var1@ @var2@ > @optOut1@.part && mv @optOut1@.part @optOut1@",
-		@name = "htseq_" + sample
+		@name = "htseq_" + sample,
+		@execute  = "once" 
 	)
 	bamCounts[sample] = count.optOut1
 }
@@ -249,7 +251,7 @@ qcReport  = getQCReport
     cexGeneBodyCoverage    = 0.3,
     gcBiasYMax             = 4,
     gcBiasYMin             = -3,
-    sampleAnnotationColumns = "Material,MNA,ATRX,2p gain,4p loss,6q loss,7q gain,11q del,17q gain",
+    sampleAnnotationColumns = "Material,TP,Inf Group,CDR,G,MNA,ATRX,2p gain,4p loss,6q loss,7q gain,11q del,17q gain",
     clusterHeatmapLegendXOffset = 0.04,
     clusterHeatmapLegendYOffset = 0.1,
     clusterHeatmapMargins   = "5,5.5",
@@ -396,9 +398,10 @@ for ID, comparison : comparisons
 	(
 		expr = degAllLst[ID],
 		geneNames = geneNames,
+		labelNonameGenesWithId = true,
+		labelTopN = 30,
 		sigthresh = comparison.qLimit,
 		lfcthresh = comparison.fcLimit,
-		labelTopN = 20,
 		cexLabel = 0.4,
 		sampleSize = 1000,
 		caption = "Scatter plot of log2 fold-changes vs. p-values (aka 'volcano plot') comparing gene expression between " + comparison.caseG + " and " + comparison.controlG + " samples.",
@@ -652,7 +655,7 @@ vennSetTableReport_DTC_vs_MNC_AND_NOT_TUM_vs_MNC = VennSetTableReport
 	section            = "Intersection DTC vs. MNC and NOT TUM vs. MNC",
 	sectionType        = "subsubsection",
 	caption            = "These genes were found to be significantly differentially expressed comparing " + comparisons["DTC_vs_MNC"].desc + " (set 'A') but NOT comparing " + comparisons["TUM_vs_MNC"].desc + " (set 'B'). " +
-	                     "Thus, these genes have potential DTC-specific functions. Genes sorted by column 'FC(A)' from most to least significant.",
+	                     "Thus, these genes have potential DTC-specific functions. Genes sorted by column 'FC(A)' from largest to smallest.",
 	@enabled           = runVenn
 )
 degReportLst["vennSetTableReport_DTC_vs_MNC_AND_NOT_TUM_vs_MNC"] = vennSetTableReport_DTC_vs_MNC_AND_NOT_TUM_vs_MNC.report
@@ -730,7 +733,7 @@ degReportLst["vennSetTableReport_DTC_vs_MNC_AND_DTC_vs_TUM_AND_TUM_vs_MNC"] = ve
 //--- EXPRESSION BOX PLOTS OF SELECTED GENES
 //------------------------------------------------------------------------------------------------
 
-boxplotCustom = ExpressionBoxPlot
+boxplotMito = ExpressionBoxPlot
 (
 	expr   = deseqExprMatrix.expr,
 	force sampleGroups = sampleGroups,
@@ -748,9 +751,27 @@ boxplotCustom = ExpressionBoxPlot
 	sectionType="subsection"
 )
 
+boxplotMage = ExpressionBoxPlot
+(
+	expr   = deseqExprMatrix.expr,
+	force sampleGroups = sampleGroups,
+	includeGroups="TUMmna,TUMnomna,DTCdxmna,DTCdxnomna,DTCrelmna,DTCrelnomna,MNC",
+	annotation = geneAnnot,
+	hgnc = "MAGEA1,MAGEA10,MAGEA11,MAGEA12,MAGEA3,MAGEA4,MAGEA5,MAGEA6,MAGEA8,MAGEB1,MAGEB10,MAGEB16,MAGEB17,MAGEB18,MAGEB2,MAGEB3,MAGEB4,MAGEB6,MAGEC1,MAGEC2,MAGEC3,MAGED1,MAGED2,MAGED4,MAGEE1,MAGEE2,MAGEF1,MAGEH1",
+	nRow = 5,
+	nCol = 6,
+	height = 10,
+	labelOutliers=true,
+	cexSampleLabel=0.3,
+	cexGroupLabel=0.7,
+	caption = 'Expression values of MAGE gene family members.',
+	sectionTitle="MAGE", 
+	sectionType="subsection"
+)
+
 boxplotSelectedGenes = LatexCombiner
 (
-	array        = {boxplotCustom.document}, 
+	array        = {boxplotMito.document, boxplotMage.document}, 
 	pagebreak    = true,
 	sectionTitle = "Expression values of selected genes", 
 	sectionType  = "section"
