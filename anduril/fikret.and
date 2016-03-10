@@ -398,7 +398,6 @@ for ID, comparison : comparisons
 	(
 		expr = degAllLst[ID],
 		geneNames = geneNames,
-		labelNonameGenesWithId = true,
 		labelTopN = 30,
 		sigthresh = comparison.qLimit,
 		lfcthresh = comparison.fcLimit,
@@ -408,6 +407,22 @@ for ID, comparison : comparisons
 		sectionTitle="Volcano plot " + std.quote(ID, type="Latex"),
 		sectionType="subsubsection",
 		@name = "degVolcanoPlot_" + std.quote(ID, type="Anduril")
+	)
+
+	degVolcanoPlotMito = VolcanoPlot
+	(
+		expr = degAllLst[ID],
+		geneNames = mitoGeneNames,
+		onlyGenesWithNames = true,
+		labelTopN = 100,
+		sigthresh = comparison.qLimit,
+		lfcthresh = comparison.fcLimit,
+		cexLabel = 0.4,
+		sampleSize = 1000,
+		caption = "Scatter plot of log2 fold-changes vs. p-values (aka 'volcano plot') of mitochondria-encoded genes comparing gene expression between " + comparison.caseG + " and " + comparison.controlG + " samples.",
+		sectionTitle="Volcano plot " + std.quote(ID, type="Latex") + " (mitochondria-encoded genes)",
+		sectionType="subsubsection",
+		@name = "degVolcanoPlotMito_" + std.quote(ID, type="Anduril")
 	)
 
 	//--- TABLES WITH UP- AND DOWN-REULATED GENES --------------------------------------------------------------------------//
@@ -599,6 +614,7 @@ for ID, comparison : comparisons
 	(
 		array = {
 			degVolcanoPlot.document,
+			degVolcanoPlotMito.document,
 			degTableUp, 
 			degBoxplotUp,
 			degTableDn, 
@@ -737,7 +753,7 @@ boxplotMito = ExpressionBoxPlot
 (
 	expr   = deseqExprMatrix.expr,
 	force sampleGroups = sampleGroups,
-	includeGroups="TUM,DTCdx,DTCrel,MNC",
+	includeGroups="TUM,DTC,MNC",
 	annotation = geneAnnot,
 	hgnc = "MT-TF,MT-RNR1,MT-TV,MT-RNR2,MT-TL1,MT-ND1,MT-TI,MT-TQ,MT-TM,MT-ND2,MT-TW,MT-TA,MT-TN,MT-TC,MT-TY,MT-CO1,MT-TS1,MT-TD,MT-CO2,MT-TK,MT-ATP8,MT-ATP6,MT-CO3,MT-TG,MT-ND3,MT-TR,MT-ND4L,MT-ND4,MT-TH,MT-TS2,MT-TL2,MT-ND5,MT-ND6,MT-TE,MT-CYB,MT-TT,MT-TP",
 	nRow = 6,
@@ -746,8 +762,26 @@ boxplotMito = ExpressionBoxPlot
 	labelOutliers=true,
 	cexSampleLabel=0.3,
 	cexGroupLabel=0.7,
-	caption = 'Expression values of mitochondria encoded genes.',
-	sectionTitle="Mitochondria encoded genes", 
+	caption = 'Expression values of mitochondria-encoded genes.',
+	sectionTitle="Mitochondria-encoded genes", 
+	sectionType="subsection"
+)
+
+boxplotMitoMNA = ExpressionBoxPlot
+(
+	expr   = deseqExprMatrix.expr,
+	force sampleGroups = sampleGroups,
+	includeGroups="TUMmna,TUMnomna,DTCmna,DTCnomna,MNC",
+	annotation = geneAnnot,
+	hgnc = "MT-TF,MT-RNR1,MT-TV,MT-RNR2,MT-TL1,MT-ND1,MT-TI,MT-TQ,MT-TM,MT-ND2,MT-TW,MT-TA,MT-TN,MT-TC,MT-TY,MT-CO1,MT-TS1,MT-TD,MT-CO2,MT-TK,MT-ATP8,MT-ATP6,MT-CO3,MT-TG,MT-ND3,MT-TR,MT-ND4L,MT-ND4,MT-TH,MT-TS2,MT-TL2,MT-ND5,MT-ND6,MT-TE,MT-CYB,MT-TT,MT-TP",
+	nRow = 6,
+	nCol = 7,
+	height = 10,
+	labelOutliers=true,
+	cexSampleLabel=0.3,
+	cexGroupLabel=0.7,
+	caption = 'Expression values of mitochondria-encoded genes stratified by MNA status.',
+	sectionTitle="Mitochondria-encoded genes stratified by MNA status", 
 	sectionType="subsection"
 )
 
@@ -771,7 +805,7 @@ boxplotMage = ExpressionBoxPlot
 
 boxplotSelectedGenes = LatexCombiner
 (
-	array        = {boxplotMito.document, boxplotMage.document}, 
+	array        = {boxplotMito.document, boxplotMitoMNA.document, boxplotMage.document}, 
 	pagebreak    = true,
 	sectionTitle = "Expression values of selected genes", 
 	sectionType  = "section"
