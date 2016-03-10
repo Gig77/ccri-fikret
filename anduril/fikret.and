@@ -226,7 +226,8 @@ deseqExprMatrix = DESeqExpr
 	geneCounts  = bamCounts,
     counts      = false,
     maxNA       = 0.9,
-    normalized  = true
+    normalized  = true,
+    add1        = true
 )
 
 //------------------------------------------------------------------------------------------------
@@ -241,7 +242,7 @@ qcReport  = getQCReport
 	alignedBAMs            = alignedBams,
     gtf                    = gtf,
     countMatrix            = htseqExprMatrix.countArray["all"],
-    force expr             = deseqExprMatrix.expr,
+    force expr             = deseqExprMatrix.log2,
     force groups           = sampleGroupsUnique,
     force inputSamples     = inputSamples,
     readStatsYMax          = 50,
@@ -458,7 +459,7 @@ for ID, comparison : comparisons
 	degBoxplotUp = getDEGBoxPlots
 	(
 		degs = degCalledLst[ID],
-		exprMatrix = deseqExprMatrix.expr,
+		exprMatrix = deseqExprMatrix.log2,
 		sampleGroups=inputSampleGroups,
 		geneAnnot=geneAnnot,
 		direction="up",
@@ -472,7 +473,7 @@ for ID, comparison : comparisons
 	degBoxplotDn = getDEGBoxPlots
 	(
 		degs = degCalledLst[ID],
-		exprMatrix = deseqExprMatrix.expr,
+		exprMatrix = deseqExprMatrix.log2,
 		sampleGroups=inputSampleGroups,
 		geneAnnot=geneAnnot,
 		direction="down",
@@ -488,7 +489,7 @@ for ID, comparison : comparisons
 
 	exprHeatmap = getHeatmapReport
 	(
-		exprMatrix   = deseqExprMatrix.expr,
+		exprMatrix   = deseqExprMatrix.log2,
 		degCalled    = degCalledLst[ID],
 		geneNames    = geneNames,
 		sampleGroups = sampleGroups,
@@ -751,7 +752,7 @@ degReportLst["vennSetTableReport_DTC_vs_MNC_AND_DTC_vs_TUM_AND_TUM_vs_MNC"] = ve
 
 boxplotMito = ExpressionBoxPlot
 (
-	expr   = deseqExprMatrix.expr,
+	expr   = deseqExprMatrix.log2,
 	force sampleGroups = sampleGroups,
 	includeGroups="TUM,DTC,MNC",
 	annotation = geneAnnot,
@@ -769,7 +770,7 @@ boxplotMito = ExpressionBoxPlot
 
 boxplotMitoMNA = ExpressionBoxPlot
 (
-	expr   = deseqExprMatrix.expr,
+	expr   = deseqExprMatrix.log2,
 	force sampleGroups = sampleGroups,
 	includeGroups="TUMmna,TUMnomna,DTCmna,DTCnomna,MNC",
 	annotation = geneAnnot,
@@ -787,7 +788,7 @@ boxplotMitoMNA = ExpressionBoxPlot
 
 boxplotMage = ExpressionBoxPlot
 (
-	expr   = deseqExprMatrix.expr,
+	expr   = deseqExprMatrix.log2,
 	force sampleGroups = sampleGroups,
 	includeGroups="TUMmna,TUMnomna,DTCdxmna,DTCdxnomna,DTCrelmna,DTCrelnomna,MNC",
 	annotation = geneAnnot,
