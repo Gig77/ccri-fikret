@@ -100,12 +100,24 @@ for entry : std.itercsv(inputSamples)
 //--- SAMPLE GROUPS
 //------------------------------------------------------------------------------------------------
 
-sampleGroups = TableQuery
+removeExcludedSamples = REvaluate
 (
-	table1 = inputSampleGroups @require,
-	query  = '''SELECT * FROM table1 ORDER BY "ID"'''
+	table1 = inputSamples,
+	table2 = inputSampleGroups,
+	script = StringInput(content='''
+		excluded <- table1$Alias[toupper(table1$Exclude)=="YES"]
+		table2$Members <- as.character(table2$Members)
+		
+		for (i in 1:nrow(table2)) {
+		  m.old <- unlist(strsplit(table2$Members[i], ","))
+		  m.new <- m.old[!m.old %in% excluded]
+		  table2$Members[i] <- paste(m.new, collapse=",")
+		}
+	    table2 <- table2[table2$Members != "",]
+		table.out <- table2
+	''')
 )
-
+sampleGroups = removeExcludedSamples.table
 sampleGroupsUnique = CSVFilter(csv=sampleGroups, regexp="ID=DTC|TUM|MNC")
 
 //------------------------------------------------------------------------------------------------
@@ -316,7 +328,7 @@ for ID, comparison : comparisons
 	(
 		countMatrix             = htseqExprMatrix.countArray["all"],
 		samples                 = inputSamples,
-		force sampleGroups      = inputSampleGroups,
+		force sampleGroups      = sampleGroups,
 	    caseGroup               = comparison.caseG,
 	    controlGroup            = comparison.controlG,
 	    otherGroups             = comparison.otherG,
@@ -460,7 +472,7 @@ for ID, comparison : comparisons
 	(
 		degs = degCalledLst[ID],
 		exprMatrix = deseqExprMatrix.log2,
-		sampleGroups=inputSampleGroups,
+		force sampleGroups=sampleGroups,
 		geneAnnot=geneAnnot,
 		direction="up",
 		comparison=comparison,
@@ -474,7 +486,7 @@ for ID, comparison : comparisons
 	(
 		degs = degCalledLst[ID],
 		exprMatrix = deseqExprMatrix.log2,
-		sampleGroups=inputSampleGroups,
+		force sampleGroups=sampleGroups,
 		geneAnnot=geneAnnot,
 		direction="down",
 		comparison=comparison,
@@ -492,7 +504,7 @@ for ID, comparison : comparisons
 		exprMatrix   = deseqExprMatrix.log2,
 		degCalled    = degCalledLst[ID],
 		geneNames    = geneNames,
-		sampleGroups = sampleGroups,
+		force sampleGroups = sampleGroups,
 		comparison   = comparison,
 		sectionType  = "subsubsection",
 		fontSizeRow  = 3,
