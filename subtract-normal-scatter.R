@@ -38,8 +38,8 @@ p <- ggplot(data=d, aes(tumor, dtc)) +
   geom_point(alpha=0.3, size=0.7) + 
   scale_x_log10(limits=c(1,1000)) + 
   scale_y_log10(limits=c(1,1000)) +
-  stat_density2d(aes(fill=..level.., alpha=..level..), geom = "polygon", colour = "black", size=0.3) +
-  scale_fill_continuous(low="blue", high="red") +
+  stat_density2d(aes(fill=..level.., alpha=..level..), geom = "polygon", colour = "black", size=0.1) +
+  scale_fill_gradientn(colours = colorRampPalette(c("blue", "red", "yellow"))(100)) +
 #  geom_smooth(method=lm, linetype=2, colour="red", se=F) +
   geom_abline(intercept=0, slope=1) +
   guides(alpha="none") +
