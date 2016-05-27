@@ -6,9 +6,10 @@ title = "Neuroblastoma DTC RNA-seq"
 shortName = "NB-DTC"
 authors = "Christian Frech and Marko Laakso"
 
+useISOpure   = false   // use deconvoluted counts for DTCs?
 runMutations = false
+runGSEA      = true
 runHeatmap   = true
-runGSEA      = false
 runNetwork   = true
 runVenn      = true
 runPGE       = true
@@ -35,6 +36,7 @@ ensemblDb            = INPUT(path="/usr/local/share/anduril-bundles/moksiskaan/e
 genesetAnnotation    = INPUT(path="/mnt/projects/generic/data/ccri/geneset_annotation.tsv")                            // assigns gene sets to categories for filtering
 latexHeaderMutation  = INPUT(path="/mnt/projects/fikret/scripts/anduril/latexHeaderMutation")
 mitoGeneNames        = INPUT(path="/mnt/projects/fikret/data/mito_genes.tsv")                                          // genes encoded on mitochondrial genome
+countsISOpure        = INPUT(path="/mnt/projects/fikret/results/counts.ISOpure.csv")                                   // count matrix containing deconvoluted counts for DTC samples
 
 moksiskaanInit = MoksiskaanInit(showLog='EnsemblImport,PathwayCommonsImport,PINAImport,WikiPathways')
 ensemblRef = XrefLinkRule(moksiskaan = moksiskaanInit.connection, columns = "Ensembl=Ensembl", xrefTypes  = XrefType_Ensembl_gene)
@@ -81,18 +83,31 @@ gtfNorRNA = BashEvaluate
 //--- SAMPLES
 //------------------------------------------------------------------------------------------------
 
+inputSamplesNotExcluded = CSVFilter(csv=inputSamples, regexp="ExcludeEntirely=Yes|YES|y|Y", includeColumns="", negate=true)
+inputSamplesNotExcludedIdLst = CSV2IDList(table1=inputSamplesNotExcluded, columnIn="Alias")
+
+inputSamplesQC = CSVFilter(csv=inputSamplesNotExcluded, regexp="ExcludeQC=Yes|YES|y|Y", includeColumns="", negate=true)
+inputSamplesQCIdLst = CSV2IDList(table1=inputSamplesQC, columnIn="Alias")
+
+inputSamplesDGEA = CSVFilter(csv=inputSamplesNotExcluded, regexp="ExcludeDGEA=Yes|YES|y|Y", includeColumns="", negate=true)
+inputSamplesDGEAIdLst = CSV2IDList(table1=inputSamplesDGEA, columnIn="Alias")
+
 samples = record()
-for entry : std.itercsv(inputSamples) 
+for entry : std.itercsv(inputSamplesNotExcluded) 
 {
 	samples[""+entry.ID] =
 	{
 		'alias' = entry.Alias,
 		'file' = entry.File,
-		'exclude' = false
+		'excludeQC' = false,
+		'excludeDGEA' = false
 	}
 
-	if (entry.Exclude == "Yes" || entry.Exclude == "YES" || entry.Exclude == "yes") {
-		samples[""+entry.ID]["exclude"] = true
+	if (entry.ExcludeQC == "Yes" || entry.ExcludeQC == "YES" || entry.ExcludeQC == "yes" || entry.ExcludeQC == "Y" || entry.ExcludeQC == "y") {
+		samples[""+entry.ID]["excludeQC"] = true
+	}
+	if (entry.ExcludeDGEA == "Yes" || entry.ExcludeDGEA == "YES" || entry.ExcludeDGEA == "yes" || entry.ExcludeDGEA == "Y" || entry.ExcludeDGEA == "y") {
+		samples[""+entry.ID]["excludeDGEA"] = true
 	}
 }
 
@@ -100,25 +115,25 @@ for entry : std.itercsv(inputSamples)
 //--- SAMPLE GROUPS
 //------------------------------------------------------------------------------------------------
 
-removeExcludedSamples = REvaluate
+sampleGroupsWithoutExcludedSamples = REvaluate
 (
-	table1 = inputSamples,
+	table1 = inputSamplesDGEA,
 	table2 = inputSampleGroups,
 	script = StringInput(content='''
-		excluded <- table1$Alias[toupper(table1$Exclude)=="YES"]
 		table2$Members <- as.character(table2$Members)
 		
 		for (i in 1:nrow(table2)) {
 		  m.old <- unlist(strsplit(table2$Members[i], ","))
-		  m.new <- m.old[!m.old %in% excluded]
+		  m.new <- m.old[m.old %in% table1$Alias]
 		  table2$Members[i] <- paste(m.new, collapse=",")
 		}
 	    table2 <- table2[table2$Members != "",]
 		table.out <- table2
 	''')
 )
-sampleGroups = removeExcludedSamples.table
-sampleGroupsUnique = CSVFilter(csv=sampleGroups, regexp="ID=DTC|TUM|MNC")
+sampleGroups = sampleGroupsWithoutExcludedSamples.table
+
+sampleGroupsQC = CSVFilter(csv=inputSampleGroups, regexp="ID=DTC|TUM|MNC")
 
 //------------------------------------------------------------------------------------------------
 //--- COMPARISONS
@@ -147,6 +162,10 @@ for comparison : std.itercsv(inputComparisons)
 		@name     = "sampleIds_" + std.quote(comparison.ID, type="Anduril")
 	)
 
+	if (useISOpure) {
+		comparison.design = std.strReplace(comparison.design, "TumorFraction \\+ ", "")  // already adjusted for
+	}
+	
 	// add group record	
 	comparisons[comparison.ID] = 
 	{
@@ -175,10 +194,10 @@ include "/mnt/projects/fikret/anduril/includes/experimentalSetup.and"
 
 experimentReport = experimentalSetupReport
 (
-	samples            = inputSamples,
+	samples            = inputSamplesNotExcluded,
 	sampleGroups       = sampleGroups,
 	comparisons        = inputComparisons,
-	sampleTableColumns = "Sample,Alias,TP,Material,P ID,Rel,Dead,MNA,ATRX,2p gain,4p loss,6q loss,7q gain,11q del,17q gain",
+	sampleTableColumns = "Sample,Alias,TP,Material,PID,Rel,Dead,MNA,ATRX,2p gain,4p loss,6q loss,7q gain,11q del,17q gain",
 	sampleTableFormat  = "ccccccccccccccc",
 	fontsize           = "tiny"
 )
@@ -188,6 +207,7 @@ experimentReport = experimentalSetupReport
 //------------------------------------------------------------------------------------------------
 
 alignedBams = record()
+alignedBamsQC = record()
 for id, sample : samples 
 {
 	@out.alignment.filename = sample.alias + '.gsnap.sorted.dupmarked.bam'
@@ -203,13 +223,14 @@ for id, sample : samples
 		@execute  = "once" 
 	)
 
-	if (!sample.exclude) {
-		alignedBams[sample.alias] = gsnap.alignment
+	alignedBams[sample.alias] = gsnap.alignment
+	if (!sample.excludeQC) {
+		alignedBamsQC[sample.alias] = gsnap.alignment
 	}
 }
 
 //------------------------------------------------------------------------------------------------
-//--- EXPRESSION MATRIX
+//--- EXPRESSION MATRIX (one that contains all samples and one only the ones entering the QC)
 //------------------------------------------------------------------------------------------------
 
 bamCounts  = {}
@@ -227,20 +248,113 @@ for sample, bam : alignedBams
 	bamCounts[sample] = count.optOut1
 }
 
+bamCountsQC  = {}
+bamCountsDGEA  = {}
+for id, sample : samples 
+{
+	if (!sample.excludeQC) {
+		bamCountsQC[sample.alias] = bamCounts[sample.alias]
+	}
+	if (!sample.excludeDGEA) {
+		bamCountsDGEA[sample.alias] = bamCounts[sample.alias]
+	}
+}
+
 htseqExprMatrix = HTSeqExprMatrix
 (
 	samples      = Array2CSV(array=bamCounts, @name="htseq_filelist"),
 	inclusionKey = ""
 )
 
-deseqExprMatrix = DESeqExpr
+htseqExprMatrixQC = HTSeqExprMatrix
 (
-	geneCounts  = bamCounts,
-    counts      = false,
-    maxNA       = 0.9,
-    normalized  = true,
-    add1        = true
+	samples      = Array2CSV(array=bamCountsQC, @name="htseq_filelist_qc"),
+	inclusionKey = ""
 )
+
+htseqExprMatrixDGEA = HTSeqExprMatrix
+(
+	samples      = Array2CSV(array=bamCountsDGEA, @name="htseq_filelist_dgea"),
+	inclusionKey = ""
+)
+
+if (!useISOpure) 
+{
+	countMatrix     = htseqExprMatrix.countArray["all"]
+	countMatrixQC   = htseqExprMatrixQC.countArray["all"]
+	countMatrixDGEA = htseqExprMatrixDGEA.countArray["all"]
+	
+	deseqExprMatrix = DESeqExpr
+	(
+		geneCounts  = bamCounts,
+	    counts      = false,
+	    maxNA       = 0.9,
+	    normalized  = true,
+	    add1        = true
+	)
+
+	deseqExprMatrixQC = DESeqExpr
+	(
+		geneCounts  = bamCountsQC,
+	    counts      = false,
+	    maxNA       = 0.9,
+	    normalized  = true,
+	    add1        = true
+	)
+
+	deseqExprMatrixDGEA = DESeqExpr
+	(
+		geneCounts  = bamCountsDGEA,
+	    counts      = false,
+	    maxNA       = 0.9,
+	    normalized  = true,
+	    add1        = true
+	)
+} else {
+
+	function DESeqExprFromCountMatrix
+	(
+		CSV geneCounts
+	) -> 
+	(
+		CSV expr,
+		CSV log2
+	) 
+	{
+		fpm = REvaluate
+		(
+			table1 = geneCounts,
+			script = StringInput(content='''
+				library(DESeq2)
+				table1 <- Matrix.read(get.input(cf, "table1"))
+				sampleTable <- data.frame(sampleName = colnames(table1))
+				rownames(sampleTable) <- sampleTable$sampleName
+				dds <- DESeqDataSetFromMatrix(countData = table1, colData = sampleTable, design = ~1)
+				table.out <- fpm(dds, robust=T)
+				table.out <- table.out[apply(table.out, 1, function(x){ sum(x==0) <= length(x) * 0.9 }),]
+				optOut1 <- table.out + 1
+				optOut1 <- log2(optOut1)
+				optOut1[apply(optOut1,2,is.nan) | apply(optOut1,2,is.na) | apply(optOut1,2,is.infinite)] <- 0
+				CSV.write(get.output(cf, "optOut1"), optOut1)
+				rm(optOut1)
+			''')
+		)
+	
+		return record
+		(
+			expr = fpm.table,
+			log2 = fpm.optOut1
+		)
+	}
+	
+	countMatrix     = CSVFilter(csv=countsISOpure, includeColumns=inputSamplesNotExcludedIdLst, includeColumns="ID", colOrder=true)
+	countMatrixQC   = CSVFilter(csv=countsISOpure, includeColumns=inputSamplesQCIdLst, includeColumns="ID", colOrder=true)
+	countMatrixDGEA = CSVFilter(csv=countsISOpure, includeColumns=inputSamplesDGEAIdLst, includeColumns="ID", colOrder=true)
+
+	deseqExprMatrix     = DESeqExprFromCountMatrix(geneCounts = countMatrix)
+	deseqExprMatrixQC   = DESeqExprFromCountMatrix(geneCounts = countMatrixQC)
+	deseqExprMatrixDGEA = DESeqExprFromCountMatrix(geneCounts = countMatrixDGEA)
+}
 
 //------------------------------------------------------------------------------------------------
 //--- QUALITY CONTROL
@@ -251,24 +365,29 @@ include "/mnt/projects/fikret/anduril/includes/qc.and"
 qcReport  = getQCReport
 (
 	samples                = samples,
-	alignedBAMs            = alignedBams,
+	alignedBAMs            = alignedBamsQC,
     gtf                    = gtf,
-    countMatrix            = htseqExprMatrix.countArray["all"],
-    force expr             = deseqExprMatrix.log2,
-    force groups           = sampleGroupsUnique,
-    force inputSamples     = inputSamples,
+	countMatrix            = countMatrixQC,
+    force expr             = deseqExprMatrixQC.log2,
+    force groups           = sampleGroupsQC,
+    force inputSamples     = inputSamplesQC,
     readStatsYMax          = 50,
-    readStatsSamplesPerRow = 13,
-    cexClusterHeatmap      = 0.35,
+    readStatsSamplesPerRow = 15,
+    cexClusterHeatmap      = 0.3,
     cexMDS                 = 0.4,
-    cexGeneBodyCoverage    = 0.3,
+    cexGeneBodyCoverage    = 0.25,
+    boxplotCexAxis         = 0.4,
+//    readStatsSamplesPerRow = 13,
+//    cexClusterHeatmap      = 0.35,
+//    cexMDS                 = 0.4,
+//    cexGeneBodyCoverage    = 0.3,
+//    boxplotCexAxis         = 0.6,
     gcBiasYMax             = 4,
     gcBiasYMin             = -3,
     sampleAnnotationColumns = "Material,TP,Inf Group,CDR,G,MNA,ATRX,2p gain,4p loss,6q loss,7q gain,11q del,17q gain",
     clusterHeatmapLegendXOffset = 0.04,
     clusterHeatmapLegendYOffset = 0.1,
-    clusterHeatmapMargins   = "5,5.5",
-    boxplotCexAxis          = 0.6
+    clusterHeatmapMargins   = "5,5.5"
 )
 
 //------------------------------------------------------------------------------------------------
@@ -303,7 +422,7 @@ OUTPUT(mutationPDF.document)
 //--- DIFFERENTIAL GENE EXPRESSION ANALYSIS
 //------------------------------------------------------------------------------------------------
 
-gMoksisA = PiispanhiippaAnnotator(sourceKeys = deseqExprMatrix.expr @require,
+gMoksisA = PiispanhiippaAnnotator(sourceKeys = deseqExprMatrixDGEA.expr @require,
                                   connection = moksiskaanInit.connection,
                                   inputDB    = XrefType_Ensembl_gene,
                                   organism   = Organism_Homo_sapiens,
@@ -326,8 +445,8 @@ for ID, comparison : comparisons
 {
 	deseq = DESeq2
 	(
-		countMatrix             = htseqExprMatrix.countArray["all"],
-		samples                 = inputSamples,
+		countMatrix             = countMatrixDGEA,
+		samples                 = inputSamplesDGEA,
 		force sampleGroups      = sampleGroups,
 	    caseGroup               = comparison.caseG,
 	    controlGroup            = comparison.controlG,
@@ -471,7 +590,7 @@ for ID, comparison : comparisons
 	degBoxplotUp = getDEGBoxPlots
 	(
 		degs = degCalledLst[ID],
-		exprMatrix = deseqExprMatrix.log2,
+		force exprMatrix = deseqExprMatrixDGEA.log2,
 		force sampleGroups=sampleGroups,
 		geneAnnot=geneAnnot,
 		direction="up",
@@ -485,7 +604,7 @@ for ID, comparison : comparisons
 	degBoxplotDn = getDEGBoxPlots
 	(
 		degs = degCalledLst[ID],
-		exprMatrix = deseqExprMatrix.log2,
+		force exprMatrix = deseqExprMatrixDGEA.log2,
 		force sampleGroups=sampleGroups,
 		geneAnnot=geneAnnot,
 		direction="down",
@@ -501,13 +620,13 @@ for ID, comparison : comparisons
 
 	exprHeatmap = getHeatmapReport
 	(
-		exprMatrix   = deseqExprMatrix.log2,
+		force exprMatrix = deseqExprMatrixDGEA.log2,
 		degCalled    = degCalledLst[ID],
 		geneNames    = geneNames,
 		force sampleGroups = sampleGroups,
 		comparison   = comparison,
 		sectionType  = "subsubsection",
-		fontSizeRow  = 3,
+		fontSizeRow  = 2,
 		@name        = "heatmap" + std.quote(ID, type="Anduril"),
 		@enabled     = runHeatmap
 	)
@@ -764,7 +883,7 @@ degReportLst["vennSetTableReport_DTC_vs_MNC_AND_DTC_vs_TUM_AND_TUM_vs_MNC"] = ve
 
 boxplotMito = ExpressionBoxPlot
 (
-	expr   = deseqExprMatrix.log2,
+	force expr   = deseqExprMatrixDGEA.log2,
 	force sampleGroups = sampleGroups,
 	includeGroups="TUM,DTC,MNC",
 	annotation = geneAnnot,
@@ -782,7 +901,7 @@ boxplotMito = ExpressionBoxPlot
 
 boxplotMitoMNA = ExpressionBoxPlot
 (
-	expr   = deseqExprMatrix.log2,
+	force expr   = deseqExprMatrixDGEA.log2,
 	force sampleGroups = sampleGroups,
 	includeGroups="TUMmna,TUMnomna,DTCmna,DTCnomna,MNC",
 	annotation = geneAnnot,
@@ -800,7 +919,7 @@ boxplotMitoMNA = ExpressionBoxPlot
 
 boxplotMage = ExpressionBoxPlot
 (
-	expr   = deseqExprMatrix.log2,
+	force expr   = deseqExprMatrixDGEA.log2,
 	force sampleGroups = sampleGroups,
 	includeGroups="TUMmna,TUMnomna,DTCdxmna,DTCdxnomna,DTCrelmna,DTCrelnomna,MNC",
 	annotation = geneAnnot,
@@ -1108,4 +1227,3 @@ combinedPDFGsea = LatexPDF
 
 @out.out.filename = shortName + "-GSEA.pdf"
 OUTPUT(combinedPDFGsea.document)
-
