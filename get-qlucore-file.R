@@ -2,7 +2,7 @@
 m <- read.delim("/mnt/projects/fikret/results/anduril/execute/qcReport-samplesClusterHeatmap/vst.csv", check.names = F, stringsAsFactors = F)
 ann.var <- read.delim("/mnt/projects/fikret/data/ensembl.homo_sapiens_75_37.geneAnnotations.tsv", check.names = F, stringsAsFactors = F)
 ann.sample <- read.delim("/mnt/projects/fikret/data/sample_key.csv", check.names = F, stringsAsFactors = F)
-groups <- read.delim("/mnt/projects/fikret/results/anduril/execute/sampleGroups/table.csv", check.names = F, stringsAsFactors = F)
+groups <- read.delim("/mnt/projects/fikret/results/anduril/execute/sampleGroupsWithoutExcludedSamples/table.csv", check.names = F, stringsAsFactors = F)
 
 # add group memberships as columns to sample annotation
 for(g in groups$ID) {

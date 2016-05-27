@@ -1,7 +1,7 @@
 library(reshape)
 library(ggplot2)
 
-e <- read.delim("/mnt/projects/fikret/results/anduril/execute/deseqExprMatrix/expr.csv") ; names(e)[1] <- "ensembl"
+e <- read.delim("/mnt/projects/fikret/results/anduril/execute/deseqExprMatrix/log2.csv") ; names(e)[1] <- "ensembl"
 mito <- read.delim("/mnt/projects/fikret/data/mito_genes.tsv")
 e <- e[e$ensembl %in% mito$Ensembl,]
 e.long <- melt(e, "ensembl") ; names(e.long) <- c("ensembl", "sample", "expression")
