@@ -9,3 +9,4 @@ object HelloWorld {
     val helloWorld = BashEvaluate(script = "echo Hello world!")
     println("Ending workflow construction")
 }
+
